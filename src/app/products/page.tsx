@@ -8,6 +8,16 @@ import Link from 'next/link';
 
 const PRODUCTS_PER_PAGE = 9;
 
+const parseImageUrl = (url: string | null): string => {
+    if (!url) return 'https://placehold.co/600x400.png';
+    try {
+        const urls = JSON.parse(url);
+        return Array.isArray(urls) && urls.length > 0 ? urls[0] : url;
+    } catch {
+        return url;
+    }
+};
+
 async function getFilteredProducts({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined }}) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,7 +73,7 @@ async function getFilteredProducts({ searchParams }: { searchParams: { [key: str
   
   const wishlistedProductIds = new Set(wishlistData?.map(item => item.product_id) || []);
   
-  const products: Product[] = productsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const products: Product[] = productsData?.map(p => ({ ...p, imageUrl: parseImageUrl(p.image_url), longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
 
   return { products, wishlistedProductIds, totalProducts: totalProducts || 0 };
 }

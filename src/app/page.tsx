@@ -10,6 +10,16 @@ import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { HomeHeroSection } from '@/components/home-hero-section';
 
+const parseImageUrl = (url: string | null): string => {
+    if (!url) return 'https://placehold.co/600x400.png';
+    try {
+        const urls = JSON.parse(url);
+        return Array.isArray(urls) && urls.length > 0 ? urls[0] : url;
+    } catch {
+        return url;
+    }
+};
+
 export default async function Home() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -29,9 +39,9 @@ export default async function Home() {
     console.error('Error fetching homepage data:', error);
   }
 
-  const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
-  const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
-  const allProducts: Product[] = allProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: parseImageUrl(p.image_url), longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: parseImageUrl(p.image_url), longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const allProducts: Product[] = allProductsData?.map(p => ({ ...p, imageUrl: parseImageUrl(p.image_url), longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const heroSlides: HeroSlide[] = heroSlidesData || [];
 
   const fourDaysFromNow = new Date();

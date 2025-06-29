@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -13,7 +13,7 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProductFormProps {
@@ -44,6 +44,22 @@ export function ProductForm({ categories, product }: ProductFormProps) {
     success: false,
     errors: {},
   });
+  
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (product?.image_url) {
+      try {
+        const parsedUrls = JSON.parse(product.image_url);
+        if (Array.isArray(parsedUrls)) {
+          setImageUrls(parsedUrls);
+        }
+      } catch (e) {
+        // Fallback for old single URL
+        setImageUrls([product.image_url]);
+      }
+    }
+  }, [product]);
 
   useEffect(() => {
     if (state.message) {
@@ -103,17 +119,23 @@ export function ProductForm({ categories, product }: ProductFormProps) {
             {getError('category_id') && <p className="text-sm text-destructive">{getError('category_id')}</p>}
         </div>
         <div className="space-y-2">
-            <Label htmlFor="image_file">Product Image</Label>
-            <Input id="image_file" name="image_file" type="file" accept="image/png, image/jpeg, image/webp" />
-            {product?.image_url && (
+            <Label htmlFor="image_file">Product Images</Label>
+            <Input id="image_file" name="image_file" type="file" accept="image/png, image/jpeg, image/webp" multiple />
+            {isEditing && (
                 <div className="mt-4 space-y-2">
-                    <Label>Current Image</Label>
-                    <div className="relative h-24 w-24 rounded-md border">
-                        <Image src={product.image_url} alt={product.name || 'Product Image'} fill className="object-cover rounded-md" />
+                    <Label>Current Images</Label>
+                    <div className="flex flex-wrap gap-2">
+                        {imageUrls.map((url, index) => (
+                           <div key={index} className="relative h-24 w-24 rounded-md border">
+                                <Image src={url} alt={`Product Image ${index + 1}`} fill className="object-cover rounded-md" />
+                            </div>
+                        ))}
                     </div>
-                    <Input type="hidden" name="image_url" value={product.image_url} />
+                    {/* Hidden input to pass existing URLs */}
+                    <Input type="hidden" name="image_url" value={product?.image_url || '[]'} />
                 </div>
             )}
+             <p className="text-xs text-muted-foreground">Select one or more images. If you upload new images, they will replace all existing ones.</p>
             {getError('image_file') && <p className="text-sm text-destructive">{getError('image_file')}</p>}
         </div>
       </div>
