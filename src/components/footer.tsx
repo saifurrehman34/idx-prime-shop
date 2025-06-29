@@ -65,7 +65,8 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-gray-800 text-center py-4">
-        <p className="text-gray-500 text-sm">&copy; Copyright Rimel 2022. All right reserved</p>
+        <p className="text-gray-500 text-sm">&copy; Copyright, Verdant Market 2025. all rights reserved.</p>
+        <p className="text-gray-500 text-xs mt-1">Developed by Saif Ur Rehman, SMIT WMAD-8 RN# 308591</p>
       </div>
     </footer>
   );
