@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones } from 'lucide-react';
+import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones, Apple } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { CategoryCard } from '@/components/category-card';
 import { Countdown } from '@/components/countdown';
@@ -40,31 +40,66 @@ export default async function Home() {
   return (
     <div className="flex flex-col">
       <div className="container mx-auto px-4 pt-8">
-        <div className="bg-primary/10 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
-            <div className="flex flex-col items-start text-left">
-                <p className="font-semibold text-primary mb-2">Discover Freshness</p>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
-                    The Best Organic Products, Online
-                </h1>
-                <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                    From farm to table, we deliver the freshest organic produce and pantry staples right to your doorstep.
-                </p>
-                <Button size="lg" asChild>
-                    <Link href="#">
-                        Shop All Products <ArrowRight className="ml-2"/>
-                    </Link>
-                </Button>
-            </div>
-            <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
-                <Image
-                    src="https://source.unsplash.com/featured/800x600/?grocery,organic"
-                    alt="Fresh organic vegetables"
-                    fill
-                    className="object-cover"
-                    data-ai-hint="fresh vegetables"
-                />
-            </div>
-        </div>
+        <Carousel className="w-full" opts={{ loop: true }}>
+            <CarouselContent>
+                <CarouselItem>
+                    <div className="bg-primary/10 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
+                        <div className="flex flex-col items-start text-left">
+                            <p className="font-semibold text-primary mb-2">Discover Freshness</p>
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
+                                The Best Organic Products, Online
+                            </h1>
+                            <p className="text-lg text-muted-foreground mb-8 max-w-md">
+                                From farm to table, we deliver the freshest organic produce and pantry staples right to your doorstep.
+                            </p>
+                            <Button size="lg" asChild>
+                                <Link href="#">
+                                    Shop All Products <ArrowRight className="ml-2"/>
+                                </Link>
+                            </Button>
+                        </div>
+                        <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
+                            <Image
+                                src="https://source.unsplash.com/featured/800x600/?grocery,organic"
+                                alt="Fresh organic vegetables"
+                                fill
+                                className="object-cover"
+                                data-ai-hint="fresh vegetables"
+                            />
+                        </div>
+                    </div>
+                </CarouselItem>
+                <CarouselItem>
+                   <div className="bg-accent/20 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
+                        <div className="flex flex-col items-start text-left">
+                            <p className="font-semibold text-primary mb-2">Weekly Deals</p>
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
+                                Save Big on Your Favorite Greens
+                            </h1>
+                            <p className="text-lg text-muted-foreground mb-8 max-w-md">
+                                Check out our weekly specials and enjoy amazing discounts on a wide range of products.
+                            </p>
+                            <Button size="lg" asChild>
+                                <Link href="#">
+                                    View Deals <ArrowRight className="ml-2"/>
+                                </Link>
+                            </Button>
+                        </div>
+                        <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
+                            <Image
+                                src="https://source.unsplash.com/featured/800x600/?farmers,market"
+                                alt="Farmer's Market"
+                                fill
+                                className="object-cover"
+                                data-ai-hint="farmers market"
+                            />
+                        </div>
+                    </div>
+                </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
+        </Carousel>
       </div>
       
       <div className="container mx-auto px-4 mt-16 md:mt-32 space-y-16 md:space-y-24">
