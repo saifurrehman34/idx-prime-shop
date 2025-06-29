@@ -15,10 +15,28 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    return redirect('/login?message=Could not authenticate user');
+    return redirect(`/login?message=Could not authenticate user: ${error.message}`);
   }
 
-  return redirect('/');
+  // After successful login, get the user to check their role
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    // This should not happen, but as a safeguard
+    return redirect('/login?message=Login successful, but could not retrieve user data.');
+  }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role === 'admin') {
+    return redirect('/admin/dashboard');
+  }
+
+  return redirect('/user/home');
 }
 
 export async function signup(formData: FormData) {
@@ -37,7 +55,8 @@ export async function signup(formData: FormData) {
 
   if (error) {
     console.error('Signup Error:', error);
-    return redirect('/signup?message=Could not create user. Please try again.');
+    // Passing the raw error message to help with debugging during development.
+    return redirect(`/signup?message=Could not create user: ${error.message}`);
   }
 
   return redirect('/login?message=Check your email to confirm your account');

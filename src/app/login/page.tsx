@@ -17,6 +17,7 @@ export default function LoginPage({
   searchParams: { message: string };
 }) {
   const isSuccessMessage = searchParams.message?.includes('Check your email');
+  const isErrorMessage = !isSuccessMessage && searchParams.message;
 
   return (
     <div className="flex items-center justify-center py-12">
@@ -43,8 +44,13 @@ export default function LoginPage({
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" name="password" required />
             </div>
-            {searchParams.message && (
-              <p className={`p-4 bg-foreground/10 text-center rounded-md ${isSuccessMessage ? 'text-primary' : 'text-destructive'}`}>
+            {isSuccessMessage && (
+              <p className="p-4 bg-green-100 text-green-800 text-center rounded-md text-sm">
+                {searchParams.message}
+              </p>
+            )}
+            {isErrorMessage && (
+               <p className="p-4 bg-red-100 text-red-800 text-center rounded-md text-sm">
                 {searchParams.message}
               </p>
             )}

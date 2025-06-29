@@ -42,7 +42,7 @@ export default function SignupPage({
               <Input id="password" type="password" name="password" required />
             </div>
             {searchParams.message && (
-              <p className="p-4 bg-foreground/10 text-destructive text-center rounded-md">
+              <p className="p-4 bg-foreground/10 text-destructive text-center rounded-md text-sm">
                 {searchParams.message}
               </p>
             )}
