@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Leaf, ShoppingCart } from 'lucide-react';
+import { Leaf, ShoppingCart, Heart, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/hooks/use-cart';
@@ -17,25 +17,39 @@ export function Header() {
           <Leaf className="h-6 w-6" />
           <span className="font-headline">Verdant Market</span>
         </Link>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
-                  {cartCount}
-                </span>
-              )}
-              <span className="sr-only">View Cart</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="flex flex-col">
-            <SheetHeader>
-              <SheetTitle>Your Cart</SheetTitle>
-            </SheetHeader>
-            <Cart />
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon">
+            <Search className="h-5 w-5" />
+            <span className="sr-only">Search</span>
+          </Button>
+          <Button variant="ghost" size="icon">
+            <User className="h-5 w-5" />
+            <span className="sr-only">Login</span>
+          </Button>
+          <Button variant="ghost" size="icon">
+            <Heart className="h-5 w-5" />
+            <span className="sr-only">Wishlist</span>
+          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+                    {cartCount}
+                  </span>
+                )}
+                <span className="sr-only">View Cart</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="flex flex-col">
+              <SheetHeader>
+                <SheetTitle>Your Cart</SheetTitle>
+              </SheetHeader>
+              <Cart />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
