@@ -124,6 +124,39 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_slides: {
+        Row: {
+          id: string
+          created_at: string
+          title: string
+          subtitle: string | null
+          image_url: string
+          image_ai_hint: string | null
+          link: string | null
+          is_active: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          title: string
+          subtitle?: string | null
+          image_url: string
+          image_ai_hint?: string | null
+          link?: string | null
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          title?: string
+          subtitle?: string | null
+          image_url?: string
+          image_ai_hint?: string | null
+          link?: string | null
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string

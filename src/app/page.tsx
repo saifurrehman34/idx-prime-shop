@@ -4,7 +4,7 @@ import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones, A
 import { ProductCard } from '@/components/product-card';
 import { Countdown } from '@/components/countdown';
 import { createClient } from '@/lib/supabase/server';
-import type { Product, Category } from '@/types';
+import type { Product, Category, HeroSlide } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -17,13 +17,14 @@ export default async function Home() {
   const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(8);
   const { data: bestSellersData, error: bestSellersError } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(4);
   const { data: allProductsData, error: allProductsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(8);
+  const { data: heroSlidesData, error: heroSlidesError } = await supabase.from('hero_slides').select('*').eq('is_active', true).order('created_at');
 
   const { data: wishlistData } = user
     ? await supabase.from('wishlists').select('product_id').eq('user_id', user.id)
     : { data: [] };
   const wishlistedProductIds = new Set(wishlistData?.map(item => item.product_id) || []);
 
-  const error = categoriesError || featuredError || allProductsError || bestSellersError;
+  const error = categoriesError || featuredError || allProductsError || bestSellersError || heroSlidesError;
   if (error) {
     console.error('Error fetching homepage data:', error);
   }
@@ -32,6 +33,7 @@ export default async function Home() {
   const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const allProducts: Product[] = allProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const heroSlides: HeroSlide[] = heroSlidesData || [];
 
   const fourDaysFromNow = new Date();
   fourDaysFromNow.setDate(fourDaysFromNow.getDate() + 4);
@@ -53,7 +55,35 @@ export default async function Home() {
             <main className="flex-1">
                 <Carousel className="w-full" opts={{ loop: true }}>
                     <CarouselContent>
-                        <CarouselItem>
+                        {heroSlides.length > 0 ? heroSlides.map(slide => (
+                          <CarouselItem key={slide.id}>
+                              <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
+                                 <div className="flex flex-col gap-4 z-10">
+                                     <div className="flex items-center gap-4 text-white">
+                                         <p>{slide.subtitle}</p>
+                                     </div>
+                                     <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
+                                         {slide.title}
+                                     </h1>
+                                     <Button variant="link" asChild className="p-0 text-white h-auto justify-start">
+                                         <Link href={slide.link || '#'}>
+                                             Shop Now <ArrowRight className="ml-2 h-4 w-4"/>
+                                         </Link>
+                                     </Button>
+                                 </div>
+                                 <Image
+                                     src={slide.image_url}
+                                     alt={slide.title}
+                                     className="absolute right-0 bottom-0 h-full w-auto object-contain z-0"
+                                     width={500}
+                                     height={300}
+                                     data-ai-hint={slide.image_ai_hint || 'product image'}
+                                     priority
+                                 />
+                              </div>
+                          </CarouselItem>
+                        )) : (
+                           <CarouselItem>
                             <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
                                <div className="flex flex-col gap-4 z-10">
                                    <div className="flex items-center gap-4 text-white">
@@ -79,32 +109,7 @@ export default async function Home() {
                                />
                             </div>
                         </CarouselItem>
-                        <CarouselItem>
-                            <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
-                               <div className="flex flex-col gap-4 z-10">
-                                   <div className="flex items-center gap-4 text-white">
-                                       <Headphones className="h-8 w-8"/>
-                                       <p>Gaming Headset</p>
-                                   </div>
-                                   <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
-                                       Enhanced Audio Experience
-                                   </h1>
-                                   <Button variant="link" asChild className="p-0 text-white h-auto justify-start">
-                                       <Link href="/products">
-                                           Shop Now <ArrowRight className="ml-2 h-4 w-4"/>
-                                       </Link>
-                                   </Button>
-                               </div>
-                               <Image
-                                   src="https://source.unsplash.com/featured/800x600/?gaming,headset"
-                                   alt="Headset"
-                                   className="absolute right-0 bottom-0 h-full w-auto object-contain z-0"
-                                   width={500}
-                                   height={300}
-                                   data-ai-hint="gaming headset"
-                               />
-                            </div>
-                        </CarouselItem>
+                        )}
                     </CarouselContent>
                 </Carousel>
             </main>

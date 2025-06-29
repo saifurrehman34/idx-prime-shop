@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Home, LineChart, Package, ShoppingCart, Users, LogOut } from "lucide-react";
+import { Bell, Home, LineChart, Package, ShoppingCart, Users, LogOut, GalleryHorizontalEnd } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ const navItems = [
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/users", label: "Customers", icon: Users },
+    { href: "/admin/hero", label: "Hero Slides", icon: GalleryHorizontalEnd },
 ];
 
 export function AdminSidebar({ userName, userEmail, avatarUrl }: AdminSidebarProps) {
@@ -43,7 +44,7 @@ export function AdminSidebar({ userName, userEmail, avatarUrl }: AdminSidebarPro
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                                    pathname === item.href && "bg-muted text-primary"
+                                    pathname.startsWith(item.href) && "bg-muted text-primary"
                                 )}
                             >
                                 <item.icon className="h-4 w-4" />

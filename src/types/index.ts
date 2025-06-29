@@ -24,3 +24,5 @@ export type Address = Tables<'addresses'>;
 export type Review = Tables<'reviews'>;
 
 export type Wishlist = Tables<'wishlists'>;
+
+export type HeroSlide = Tables<'hero_slides'>;
