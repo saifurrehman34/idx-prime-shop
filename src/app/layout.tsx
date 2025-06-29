@@ -10,7 +10,7 @@ import type { Category } from '@/types';
 import type { User } from '@supabase/supabase-js';
 
 export const metadata: Metadata = {
-  title: 'Verdant Market',
+  title: 'Prime Shop',
   description: 'Fresh and organic products delivered to you.',
 };
 

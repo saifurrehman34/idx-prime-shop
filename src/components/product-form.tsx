@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { addProduct, updateProduct } from '@/app/admin/products/actions';
 import type { Category, Product } from '@/types';
 import { Button } from './ui/button';
@@ -102,9 +103,18 @@ export function ProductForm({ categories, product }: ProductFormProps) {
             {getError('category_id') && <p className="text-sm text-destructive">{getError('category_id')}</p>}
         </div>
         <div className="space-y-2">
-            <Label htmlFor="image_url">Image URL</Label>
-            <Input id="image_url" name="image_url" defaultValue={product?.image_url} required />
-            {getError('image_url') && <p className="text-sm text-destructive">{getError('image_url')}</p>}
+            <Label htmlFor="image_file">Product Image</Label>
+            <Input id="image_file" name="image_file" type="file" accept="image/png, image/jpeg, image/webp" />
+            {product?.image_url && (
+                <div className="mt-4 space-y-2">
+                    <Label>Current Image</Label>
+                    <div className="relative h-24 w-24 rounded-md border">
+                        <Image src={product.image_url} alt={product.name || 'Product Image'} fill className="object-cover rounded-md" />
+                    </div>
+                    <Input type="hidden" name="image_url" value={product.image_url} />
+                </div>
+            )}
+            {getError('image_file') && <p className="text-sm text-destructive">{getError('image_file')}</p>}
         </div>
       </div>
 
@@ -126,7 +136,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
       </div>
 
       <div className="flex justify-end gap-4">
-        <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
         <SubmitButton isEditing={isEditing} />
       </div>
     </form>

@@ -72,7 +72,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
       <div className="container mx-auto flex h-20 items-center justify-between gap-8 px-4 border-b">
         {/* Left Side: Logo */}
         <Link href="/" className="text-2xl font-bold">
-          Verdant Market
+          Prime Shop
         </Link>
         
         {/* Center: Desktop Nav */}
