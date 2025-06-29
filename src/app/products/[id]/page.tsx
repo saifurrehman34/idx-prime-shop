@@ -2,17 +2,30 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createGenericClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
-import { Product, Category } from '@/types';
+import { Product, Category, ReviewWithAuthor } from '@/types';
 import { ProductDetailsView } from '@/components/product-details-view';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const { data: productData, error } = await supabase
+  
+  const productPromise = supabase
     .from('products')
     .select('*, categories(name)')
     .eq('id', params.id)
     .single();
+
+  const reviewsPromise = supabase
+    .from('reviews')
+    .select('*, user_profiles(full_name, avatar_url)')
+    .eq('product_id', params.id)
+    .order('created_at', { ascending: false });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const hasPurchasedPromise = user ? supabase.rpc('user_has_purchased_product', { p_user_id: user.id, p_product_id: params.id }) : Promise.resolve({ data: false });
+
+
+  const [{ data: productData, error }, { data: reviewsData }, { data: hasPurchased }] = await Promise.all([productPromise, reviewsPromise, hasPurchasedPromise]);
 
   if (error || !productData) {
     notFound();
@@ -39,6 +52,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   };
 
   const category = productData.categories as Category | null;
+  const reviews = (reviewsData as ReviewWithAuthor[]) || [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -67,7 +81,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <ProductDetailsView product={product} imageUrls={imageUrls} />
+      <ProductDetailsView 
+        product={product} 
+        imageUrls={imageUrls} 
+        reviews={reviews}
+        hasPurchased={!!hasPurchased}
+        isUserLoggedIn={!!user}
+        />
     </div>
   );
 }

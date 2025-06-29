@@ -3,16 +3,20 @@
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { placeOrder } from './actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import Image from 'next/image';
-import type { CartItem } from '@/types';
+import type { CartItem, Address } from '@/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AddressForm } from '@/components/address-form';
+import { createClient } from '@/lib/supabase/client';
 
 function PlaceOrderButton() {
   const { pending } = useFormStatus();
@@ -23,10 +27,15 @@ function PlaceOrderButton() {
   );
 }
 
-export default function CheckoutPage() {
+function CheckoutPageInner({ initialAddresses }: { initialAddresses: Address[] }) {
   const { cartItems, cartTotal, clearCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  const [addresses, setAddresses] = useState(initialAddresses);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(
+    initialAddresses.find(a => a.is_default)?.id || initialAddresses[0]?.id
+  );
+  const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
 
   const initialState = { message: '', success: false, errors: {} };
   const placeOrderWithCart = placeOrder.bind(null, cartItems);
@@ -48,6 +57,18 @@ export default function CheckoutPage() {
       toast({ title: 'Error', description: state.message, variant: 'destructive' });
     }
   }, [state, router, toast, clearCart]);
+
+  const handleAddressFormSuccess = async () => {
+    setIsAddressFormOpen(false);
+    const supabase = createClient();
+    const { data } = await supabase.from('addresses').select('*').order('created_at', { ascending: false });
+    setAddresses(data || []);
+    // Select the newly added address
+    if (data && data.length > 0) {
+      setSelectedAddressId(data[0].id);
+    }
+  };
+
 
   if (cartItems.length === 0) {
     return (
@@ -71,38 +92,45 @@ export default function CheckoutPage() {
         <Card>
           <CardHeader>
             <CardTitle>Shipping & Payment</CardTitle>
-            <CardDescription>Enter your address for delivery. Payment will be Cash on Delivery.</CardDescription>
+            <CardDescription>Select your shipping address. Payment will be Cash on Delivery.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" name="fullName" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" name="address" placeholder="123 Main St" required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" name="city" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State / Province</Label>
-                  <Input id="state" name="state" required />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code</Label>
-                  <Input id="postalCode" name="postalCode" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input id="country" name="country" defaultValue="USA" required />
-                </div>
-              </div>
+              <input type="hidden" name="addressId" value={selectedAddressId} />
+              <RadioGroup
+                value={selectedAddressId}
+                onValueChange={setSelectedAddressId}
+                className="space-y-4"
+              >
+                {addresses.map(address => (
+                  <Label key={address.id} htmlFor={address.id} className="flex items-start gap-4 border rounded-md p-4 cursor-pointer hover:bg-muted/50 has-[:checked]:bg-muted has-[:checked]:border-primary">
+                    <RadioGroupItem value={address.id} id={address.id} />
+                    <div className="text-sm">
+                      <p className="font-semibold">{address.address_line_1}</p>
+                      <address className="not-italic text-muted-foreground">
+                        {address.address_line_2 && <>{address.address_line_2}<br /></>}
+                        {address.city}, {address.state} {address.postal_code}<br />
+                        {address.country}
+                      </address>
+                    </div>
+                  </Label>
+                ))}
+              </RadioGroup>
+              
+              <Dialog open={isAddressFormOpen} onOpenChange={setIsAddressFormOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                        <Plus className="mr-2 h-4 w-4" /> Add New Address
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add New Address</DialogTitle>
+                    </DialogHeader>
+                    <AddressForm onSuccess={handleAddressFormSuccess} />
+                </DialogContent>
+              </Dialog>
+
               <PlaceOrderButton />
             </form>
           </CardContent>
@@ -138,4 +166,30 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
+}
+
+
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+export default async function CheckoutPage() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect('/login?message=Please log in to proceed to checkout.');
+    }
+
+    const { data: addresses, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Failed to fetch addresses:', error);
+    }
+    
+    return <CheckoutPageInner initialAddresses={addresses || []} />
 }

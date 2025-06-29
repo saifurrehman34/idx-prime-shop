@@ -5,13 +5,8 @@ import { z } from 'zod';
 import type { CartItem } from '@/types';
 import { revalidatePath } from 'next/cache';
 
-const AddressSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required'),
-  address: z.string().min(1, 'Address is required'),
-  city: z.string().min(1, 'City is required'),
-  state: z.string().min(1, 'State is required'),
-  postalCode: z.string().min(1, 'Postal code is required'),
-  country: z.string().min(1, 'Country is required'),
+const CheckoutSchema = z.object({
+  addressId: z.string().uuid('A shipping address is required.'),
 });
 
 type FormState = {
@@ -42,42 +37,31 @@ export async function placeOrder(
     };
   }
 
-  const validatedFields = AddressSchema.safeParse({
-    fullName: formData.get('fullName'),
-    address: formData.get('address'),
-    city: formData.get('city'),
-    state: formData.get('state'),
-    postalCode: formData.get('postalCode'),
-    country: formData.get('country'),
+  const validatedFields = CheckoutSchema.safeParse({
+    addressId: formData.get('addressId'),
   });
 
   if (!validatedFields.success) {
     return {
-      message: 'Invalid address information. Please check all fields.',
+      message: 'Please select a shipping address.',
       success: false,
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
   
-  const { address, city, state, postalCode, country } = validatedFields.data;
+  const { addressId } = validatedFields.data;
   
-  // A real app would let users select/reuse addresses. For simplicity, we create a new one.
-  const { data: newAddress, error: addressError } = await supabase
+  // Verify the address belongs to the user
+  const { data: address, error: addressError } = await supabase
     .from('addresses')
-    .insert({
-      user_id: user.id,
-      address_line_1: address,
-      city,
-      state,
-      postal_code: postalCode,
-      country,
-    })
-    .select()
+    .select('id')
+    .eq('id', addressId)
+    .eq('user_id', user.id)
     .single();
 
-  if (addressError || !newAddress) {
-    console.error('Error creating address:', addressError);
-    return { message: 'Could not save shipping address. Please try again.', success: false };
+  if (addressError || !address) {
+    console.error('Address verification failed:', addressError);
+    return { message: 'Invalid shipping address selected.', success: false };
   }
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
@@ -87,7 +71,7 @@ export async function placeOrder(
     .insert({
       user_id: user.id,
       total_amount: totalAmount,
-      shipping_address_id: newAddress.id,
+      shipping_address_id: addressId,
       status: 'pending',
     })
     .select()
@@ -109,6 +93,7 @@ export async function placeOrder(
 
   if (orderItemsError) {
     console.error('Error creating order items:', orderItemsError);
+    // Potentially roll back the order creation here in a real app
     return { message: 'Could not save order details. Please try again.', success: false };
   }
   

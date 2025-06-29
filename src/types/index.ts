@@ -23,6 +23,10 @@ export type Address = Tables<'addresses'>;
 
 export type Review = Tables<'reviews'>;
 
+export type ReviewWithAuthor = Review & {
+  user_profiles: { full_name: string | null; avatar_url: string | null } | null;
+};
+
 export type Wishlist = Tables<'wishlists'>;
 
 export type HeroSlide = Tables<'hero_slides'>;
