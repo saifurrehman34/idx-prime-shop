@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Leaf, ShoppingCart, Heart, Search, User as UserIcon, Menu, LogOut } from 'lucide-react';
+import { Leaf, ShoppingCart, Search, Menu, LogOut, User as UserIcon, LayoutDashboard, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -21,12 +21,21 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
 import type { Category } from '@/types';
 import { cn } from '@/lib/utils';
 import type { User } from '@supabase/supabase-js';
 import { logout } from '@/app/auth/actions';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function Header({ categories, user }: { categories: Category[]; user: User | null }) {
   const { cartCount } = useCart();
@@ -74,24 +83,47 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
               <Search className="h-5 w-5" />
               <span className="sr-only">Search</span>
             </Button>
+            
             {user ? (
-              <>
-                <Button variant="ghost" size="icon">
-                  <Heart className="h-5 w-5" />
-                  <span className="sr-only">Wishlist</span>
-                </Button>
-                <form action={logout}>
-                    <Button variant="ghost" size="icon" type="submit">
-                        <LogOut className="h-5 w-5" />
-                        <span className="sr-only">Logout</span>
-                    </Button>
-                </form>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                       <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || user.email} />
+                       <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/user/home"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                     <Link href="/user/wishlist"><Heart className="mr-2 h-4 w-4" /> Wishlist</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <form action={logout}>
+                    <DropdownMenuItem asChild>
+                      <button type="submit" className="w-full">
+                         <LogOut className="mr-2 h-4 w-4" /> Logout
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-                <Button variant="ghost" size="icon" asChild>
+                <Button variant="ghost" size="sm" asChild>
                     <Link href="/login">
-                        <UserIcon className="h-5 w-5" />
-                        <span className="sr-only">Login</span>
+                        Login
                     </Link>
                 </Button>
             )}
@@ -144,11 +176,18 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   </SheetClose>
                   <hr className="my-4"/>
                    {user ? (
-                     <form action={logout}>
-                       <Button variant="ghost" type="submit" className="w-full justify-start gap-2 text-lg font-medium hover:text-primary">
-                          <LogOut className="h-5 w-5" /> Logout
-                       </Button>
-                     </form>
+                    <>
+                      <SheetClose asChild>
+                         <Link href="/user/home" className="flex items-center gap-2 text-lg font-medium hover:text-primary">
+                            <LayoutDashboard className="h-5 w-5" /> Dashboard
+                         </Link>
+                      </SheetClose>
+                      <form action={logout}>
+                        <Button variant="ghost" type="submit" className="w-full justify-start gap-2 text-lg font-medium hover:text-primary">
+                           <LogOut className="h-5 w-5" /> Logout
+                        </Button>
+                      </form>
+                    </>
                    ) : (
                     <>
                       <SheetClose asChild>

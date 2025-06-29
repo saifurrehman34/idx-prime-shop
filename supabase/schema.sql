@@ -1,139 +1,229 @@
--- 1. Create Tables
--- Note: Supabase automatically creates the `auth.users` table.
+-- Drop existing tables, types, and functions in reverse order of dependency
+DROP FUNCTION IF EXISTS public.handle_new_user;
+DROP FUNCTION IF EXISTS public.get_user_order_stats;
+DROP TABLE IF EXISTS public.notifications;
+DROP TABLE IF EXISTS public.wishlists;
+DROP TABLE IF EXISTS public.reviews;
+DROP TABLE IF EXISTS public.order_items;
+DROP TABLE IF EXISTS public.orders;
+DROP TABLE IF EXISTS public.addresses;
+DROP TABLE IF EXISTS public.user_profiles;
+DROP TABLE IF EXISTS public.products;
+DROP TABLE IF EXISTS public.categories;
+DROP TABLE IF EXISTS public.newsletter_subscribers;
+DROP TABLE IF EXISTS public.brands;
+DROP TABLE IF EXISTS public.blog_posts;
+DROP TABLE IF EXISTS public.offers;
+DROP TABLE IF EXISTS public.testimonials;
+DROP TYPE IF EXISTS public.order_status;
 
--- Create user_profiles table
-create table if not exists public.user_profiles (
-  id uuid not null primary key,
+-- USERS
+-- Create a table for public user profiles
+CREATE TABLE public.user_profiles (
+  id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
   full_name text,
   avatar_url text,
-  role text not null default 'user',
-  constraint fk_user foreign key (id) references auth.users (id) on delete cascade
+  role text NOT NULL DEFAULT 'user',
+  PRIMARY KEY (id)
 );
-comment on table public.user_profiles is 'Profile data for each user.';
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles are viewable by everyone." ON public.user_profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own profile." ON public.user_profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update own profile." ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
 
--- Create categories table
-create table if not exists public.categories (
-  id uuid not null default gen_random_uuid() primary key,
-  name text not null,
-  image_url text not null,
-  data_ai_hint text not null,
-  created_at timestamp with time zone not null default now()
-);
-comment on table public.categories is 'Product categories for the store.';
-
--- Create products table
-create table if not exists public.products (
-  id uuid not null default gen_random_uuid() primary key,
-  name text not null,
-  price numeric(10, 2) not null,
-  image_url text not null,
-  description text not null,
-  long_description text not null,
-  data_ai_hint text not null,
-  is_featured boolean not null default false,
-  is_best_seller boolean not null default false,
-  category_id uuid references public.categories(id) on delete set null,
-  created_at timestamp with time zone not null default now()
-);
-comment on table public.products is 'Products available in the store.';
-
--- Create newsletter_subscribers table
-create table if not exists public.newsletter_subscribers (
-  id uuid not null default gen_random_uuid() primary key,
-  email text not null unique,
-  created_at timestamp with time zone not null default now()
-);
-comment on table public.newsletter_subscribers is 'List of users subscribed to the newsletter.';
-
-
--- 2. Set up Row Level Security (RLS)
--- Enable RLS for all tables
-alter table public.user_profiles enable row level security;
-alter table public.categories enable row level security;
-alter table public.products enable row level security;
-alter table public.newsletter_subscribers enable row level security;
-
--- Drop existing policies to avoid conflicts
-drop policy if exists "Users can view their own profile." on public.user_profiles;
-drop policy if exists "Users can update their own profile." on public.user_profiles;
-drop policy if exists "Allow public read access to categories" on public.categories;
-drop policy if exists "Allow public read access to products" on public.products;
-drop policy if exists "Allow public insert access" on public.newsletter_subscribers;
-
-
--- Policies for user_profiles
--- Users can view their own profile.
-create policy "Users can view their own profile." on public.user_profiles for select
-  using ( auth.uid() = id );
--- Users can update their own profile.
-create policy "Users can update their own profile." on public.user_profiles for update
-  using ( auth.uid() = id );
-
--- Policies for categories
--- Anyone can view categories.
-create policy "Allow public read access to categories" on public.categories for select
-  using ( true );
-
--- Policies for products
--- Anyone can view products.
-create policy "Allow public read access to products" on public.products for select
-  using ( true );
-
--- Policies for newsletter_subscribers
--- Allow public insert access for anyone.
-create policy "Allow public insert access" on public.newsletter_subscribers for insert
-  with check ( true );
-
-
--- 3. Create Functions and Triggers
-
--- Function to create a user profile when a new user signs up in Supabase Auth
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.user_profiles (id, role)
-  values (new.id, 'user');
-  return new;
-end;
+-- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, full_name, avatar_url, role)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url', 'user');
+  RETURN new;
+END;
 $$;
+-- trigger the function every time a user is created
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Trigger to call the function after a new user is created
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+-- CATEGORIES
+CREATE TABLE public.categories (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text NOT NULL,
+    image_url text NOT NULL,
+    data_ai_hint text NOT NULL,
+    created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Categories are viewable by everyone." ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Admins can manage categories." ON public.categories FOR ALL USING (
+  (SELECT role FROM public.user_profiles WHERE id = auth.uid()) = 'admin'
+);
+-- Seed Categories
+INSERT INTO public.categories (name, image_url, data_ai_hint) VALUES
+('Fruits', 'https://placehold.co/400x400.png', 'assorted fruits'),
+('Vegetables', 'https://placehold.co/400x400.png', 'fresh vegetables'),
+('Dairy', 'https://placehold.co/400x400.png', 'dairy products'),
+('Bakery', 'https://placehold.co/400x400.png', 'artisan bread'),
+('Meats', 'https://placehold.co/400x400.png', 'fresh meat'),
+('Pantry', 'https://placehold.co/400x400.png', 'pantry staples');
 
+-- PRODUCTS
+CREATE TABLE public.products (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text NOT NULL,
+    price numeric NOT NULL,
+    image_url text NOT NULL,
+    description text NOT NULL,
+    long_description text NOT NULL,
+    data_ai_hint text NOT NULL,
+    is_featured boolean DEFAULT false,
+    is_best_seller boolean DEFAULT false,
+    created_at timestamptz DEFAULT now(),
+    category_id uuid REFERENCES public.categories(id)
+);
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Products are viewable by everyone." ON public.products FOR SELECT USING (true);
+CREATE POLICY "Admins can manage products." ON public.products FOR ALL USING (
+  (SELECT role FROM public.user_profiles WHERE id = auth.uid()) = 'admin'
+);
+-- Seed Products
+INSERT INTO public.products (name, price, image_url, description, long_description, data_ai_hint, is_featured, is_best_seller, category_id, created_at)
+VALUES
+  ('Organic Avocados', 4.99, 'https://placehold.co/600x400.png', 'Pack of 4 creamy, organic Hass avocados.', 'Our organic Hass avocados are grown in nutrient-rich soil... Perfect for toast, salads, or guacamole.', 'organic avocados', true, true, (SELECT id from categories where name = 'Fruits'), NOW() - interval '5 days'),
+  ('Fresh Strawberries', 3.49, 'https://placehold.co/600x400.png', '1 lb of sweet, juicy strawberries.', 'Hand-picked at peak ripeness, our strawberries are bursting with sweet, natural flavor.', 'fresh strawberries', true, false, (SELECT id from categories where name = 'Fruits'), NOW() - interval '4 days'),
+  ('Free-Range Eggs', 6.29, 'https://placehold.co/600x400.png', 'One dozen large brown free-range eggs.', 'Our hens are free to roam on open pastures, resulting in eggs with rich, flavorful yolks.', 'free-range eggs', false, true, (SELECT id from categories where name = 'Dairy'), NOW() - interval '3 days'),
+  ('Heirloom Tomatoes', 4.79, 'https://placehold.co/600x400.png', 'A mix of colorful and flavorful heirloom tomatoes.', 'Experience the vibrant colors and diverse flavors of our heirloom tomatoes.', 'heirloom tomatoes', true, false, (SELECT id from categories where name = 'Vegetables'), NOW() - interval '2 days'),
+  ('Artisanal Sourdough', 5.99, 'https://placehold.co/600x400.png', 'A freshly baked loaf of artisanal sourdough bread.', 'Baked daily using a traditional starter, our sourdough has a delightful tangy flavor.', 'sourdough bread', true, true, (SELECT id from categories where name = 'Bakery'), NOW() - interval '1 day'),
+  ('Cold-Pressed Olive Oil', 12.99, 'https://placehold.co/600x400.png', '500ml bottle of extra virgin olive oil.', 'Our extra virgin olive oil is cold-pressed from the finest olives to preserve its natural antioxidants.', 'olive oil', false, false, (SELECT id from categories where name = 'Pantry'), NOW());
 
--- 4. Seed Data (Optional, but recommended for development)
+-- ADDRESSES
+CREATE TABLE public.addresses (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  address_line_1 text NOT NULL,
+  address_line_2 text,
+  city text NOT NULL,
+  state text NOT NULL,
+  postal_code text NOT NULL,
+  country text NOT NULL DEFAULT 'USA',
+  is_default boolean NOT NULL DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.addresses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own addresses." ON public.addresses FOR ALL
+USING ( auth.uid() = user_id );
 
--- To create an admin user:
--- 1. Sign up a new user through the app.
--- 2. Get their user ID from the `auth.users` table in your Supabase dashboard.
--- 3. Run the following command, replacing the user ID.
---    UPDATE public.user_profiles SET role = 'admin' WHERE id = '...your-new-user-id...';
+-- ORDERS
+CREATE TYPE public.order_status AS ENUM ('pending', 'shipped', 'delivered', 'cancelled');
+CREATE TABLE public.orders (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  created_at timestamptz DEFAULT now(),
+  status public.order_status NOT NULL DEFAULT 'pending',
+  total_amount numeric NOT NULL,
+  shipping_address_id uuid NOT NULL REFERENCES public.addresses(id)
+);
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view their own orders." ON public.orders FOR SELECT
+USING ( auth.uid() = user_id );
+CREATE POLICY "Users can create their own orders." ON public.orders FOR INSERT
+WITH CHECK ( auth.uid() = user_id );
 
--- Insert sample categories
-insert into public.categories (name, image_url, data_ai_hint) values
-  ('Fruits', 'https://placehold.co/400x400.png', 'assorted fruits'),
-  ('Vegetables', 'https://placehold.co/400x400.png', 'fresh vegetables'),
-  ('Dairy', 'https://placehold.co/400x400.png', 'dairy products'),
-  ('Bakery', 'https://placehold.co/400x400.png', 'artisan bread'),
-  ('Meats', 'https://placehold.co/400x400.png', 'fresh meat'),
-  ('Pantry', 'https://placehold.co/400x400.png', 'pantry staples')
-on conflict (name) do nothing;
+-- ORDER ITEMS
+CREATE TABLE public.order_items (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  product_id uuid NOT NULL REFERENCES public.products(id),
+  quantity integer NOT NULL,
+  price numeric NOT NULL
+);
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view items in their own orders." ON public.order_items FOR SELECT
+USING ( (SELECT user_id FROM public.orders WHERE id = order_id) = auth.uid() );
+CREATE POLICY "Users can create items for their own orders." ON public.order_items FOR INSERT
+WITH CHECK ( (SELECT user_id FROM public.orders WHERE id = order_id) = auth.uid() );
 
--- Insert sample products
--- Note: on conflict is on (name) assuming names are unique for sample data
-insert into public.products (name, price, image_url, description, long_description, data_ai_hint, is_featured, is_best_seller, category_id) values
-  ('Organic Avocados', 4.99, 'https://placehold.co/600x400.png', 'Pack of 4 creamy, organic Hass avocados.', 'Our organic Hass avocados are grown in nutrient-rich soil... Perfect for toast, salads, or guacamole.', 'organic avocados', true, true, (select id from categories where name = 'Fruits')),
-  ('Fresh Strawberries', 3.49, 'https://placehold.co/600x400.png', '1 lb of sweet, juicy strawberries.', 'Hand-picked at peak ripeness, our strawberries are bursting with sweet, natural flavor.', 'fresh strawberries', true, false, (select id from categories where name = 'Fruits')),
-  ('Artisanal Sourdough', 5.99, 'https://placehold.co/600x400.png', 'A freshly baked loaf of artisanal sourdough bread.', 'Baked daily using a traditional starter, our sourdough has a delightful tangy flavor.', 'sourdough bread', true, true, (select id from categories where name = 'Bakery')),
-  ('Heirloom Tomatoes', 4.79, 'https://placehold.co/600x400.png', 'A mix of colorful and flavorful heirloom tomatoes.', 'Experience the vibrant colors and diverse flavors of our heirloom tomatoes.', 'heirloom tomatoes', true, false, (select id from categories where name = 'Vegetables')),
-  ('Free-Range Eggs', 6.29, 'https://placehold.co/600x400.png', 'One dozen large brown free-range eggs.', 'Our hens are free to roam on open pastures, resulting in eggs with rich, flavorful yolks.', 'free-range eggs', false, true, (select id from categories where name = 'Dairy')),
-  ('Cold-Pressed Olive Oil', 12.99, 'https://placehold.co/600x400.png', '500ml bottle of extra virgin olive oil.', 'Our extra virgin olive oil is cold-pressed from the finest olives to preserve its natural antioxidants.', 'olive oil', false, false, (select id from categories where name = 'Pantry')),
-  ('Ribeye Steak', 18.50, 'https://placehold.co/600x400.png', '12oz grass-fed ribeye steak.', 'A well-marbled, tender, and flavorful cut, perfect for grilling or pan-searing.', 'ribeye steak', false, true, (select id from categories where name = 'Meats')),
-  ('Organic Kale', 2.99, 'https://placehold.co/600x400.png', 'A fresh bunch of organic kale.', 'Nutrient-dense and versatile, great for salads, smoothies, or sautés.', 'fresh kale', false, false, (select id from categories where name = 'Vegetables'))
-on conflict (name) do nothing;
+-- REVIEWS
+CREATE TABLE public.reviews (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  rating int NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment text,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Reviews are public." ON public.reviews FOR SELECT USING (true);
+CREATE POLICY "Users can manage their own reviews." ON public.reviews FOR ALL
+USING ( auth.uid() = user_id );
+
+-- WISHLISTS
+CREATE TABLE public.wishlists (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, product_id)
+);
+ALTER TABLE public.wishlists ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own wishlist." ON public.wishlists FOR ALL
+USING ( auth.uid() = user_id );
+
+-- NOTIFICATIONS
+CREATE TABLE public.notifications (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  message text NOT NULL,
+  link text,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own notifications." ON public.notifications FOR ALL
+USING ( auth.uid() = user_id );
+
+-- NEWSLETTER
+CREATE TABLE public.newsletter_subscribers (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  email text NOT NULL UNIQUE,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Newsletter subscribers are public." ON public.newsletter_subscribers FOR SELECT USING (true);
+CREATE POLICY "Anyone can subscribe to the newsletter." ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+
+-- MISC. Other tables from user prompt, adding as empty tables for now.
+CREATE TABLE public.brands ( id uuid DEFAULT gen_random_uuid() PRIMARY KEY, name text NOT NULL, image_url text NOT NULL, created_at timestamptz DEFAULT now());
+CREATE TABLE public.blog_posts ( id uuid DEFAULT gen_random_uuid() PRIMARY KEY, title text NOT NULL, content text NOT NULL, image_url text NOT NULL, created_at timestamptz DEFAULT now());
+CREATE TABLE public.offers ( id uuid DEFAULT gen_random_uuid() PRIMARY KEY, title text NOT NULL, description text NOT NULL, image_url text NOT NULL, created_at timestamptz DEFAULT now());
+CREATE TABLE public.testimonials ( id uuid DEFAULT gen_random_uuid() PRIMARY KEY, name text NOT NULL, quote text NOT NULL, rating int NOT NULL, image_url text NOT NULL, created_at timestamptz DEFAULT now());
+
+-- Database Function for user stats
+CREATE OR REPLACE FUNCTION get_user_order_stats(p_user_id uuid)
+RETURNS TABLE(total_spent numeric, total_orders bigint, pending_orders bigint) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    COALESCE(SUM(o.total_amount), 0.00)::numeric AS total_spent,
+    COUNT(o.id)::bigint AS total_orders,
+    COUNT(CASE WHEN o.status = 'pending' THEN 1 END)::bigint AS pending_orders
+  FROM
+    public.orders o
+  WHERE
+    o.user_id = p_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Set up storage
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true);
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true);
+
+-- Sample User Data (replace with your own test users)
+-- Note: Manually create users via the Supabase Auth dashboard or your app's signup form.
+-- Then, you can use their IDs to seed data.
+-- Example: UPDATE public.user_profiles SET role = 'admin' WHERE id = '...user-id-here...';

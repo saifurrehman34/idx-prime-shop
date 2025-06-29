@@ -14,3 +14,13 @@ export interface CartItem {
 export type Category = Tables<'categories'>;
 
 export type UserProfile = Tables<'user_profiles'>;
+
+export type Order = Tables<'orders'>;
+
+export type OrderItem = Tables<'order_items'>;
+
+export type Address = Tables<'addresses'>;
+
+export type Review = Tables<'reviews'>;
+
+export type Wishlist = Tables<'wishlists'>;

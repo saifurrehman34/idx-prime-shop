@@ -9,6 +9,76 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          address_line_1: string
+          address_line_2: string | null
+          city: string
+          country: string
+          created_at: string
+          id: string
+          is_default: boolean
+          postal_code: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          address_line_1: string
+          address_line_2?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          postal_code: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          address_line_1?: string
+          address_line_2?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          postal_code?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      blog_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          title?: string
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           created_at: string
@@ -30,135 +100,222 @@ export type Database = {
         }
         Relationships: []
       }
-      blog_posts: {
-        Row: {
-          id: string
-          title: string
-          content: string
-          image_url: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          content: string
-          image_url: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          content?: string
-          image_url?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
       categories: {
         Row: {
-          id: string
-          name: string
-          image_url: string
-          data_ai_hint: string
           created_at: string
+          data_ai_hint: string
+          id: string
+          image_url: string
+          name: string
         }
         Insert: {
-          id?: string
-          name: string
-          image_url: string
-          data_ai_hint: string
           created_at?: string
+          data_ai_hint: string
+          id?: string
+          image_url: string
+          name: string
         }
         Update: {
-          id?: string
-          name?: string
-          image_url?: string
-          data_ai_hint?: string
           created_at?: string
+          data_ai_hint?: string
+          id?: string
+          image_url?: string
+          name?: string
         }
         Relationships: []
       }
       newsletter_subscribers: {
         Row: {
-          id: string
-          email: string
           created_at: string
+          email: string
+          id: string
         }
         Insert: {
-          id?: string
-          email: string
           created_at?: string
+          email: string
+          id?: string
         }
         Update: {
-          id?: string
-          email?: string
           created_at?: string
+          email?: string
+          id?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       offers: {
         Row: {
-          id: string
-          title: string
-          description: string
-          image_url: string
           created_at: string
+          description: string
+          id: string
+          image_url: string
+          title: string
         }
         Insert: {
-          id?: string
-          title: string
-          description: string
-          image_url: string
           created_at?: string
+          description: string
+          id?: string
+          image_url: string
+          title: string
         }
         Update: {
-          id?: string
-          title?: string
-          description?: string
-          image_url?: string
           created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          title?: string
         }
         Relationships: []
       }
-      products: {
+      order_items: {
         Row: {
           id: string
-          name: string
+          order_id: string
           price: number
-          image_url: string
-          description: string
-          long_description: string
-          data_ai_hint: string
-          is_featured: boolean
-          is_best_seller: boolean
-          created_at: string
-          category_id: string | null
+          product_id: string
+          quantity: number
         }
         Insert: {
           id?: string
-          name: string
+          order_id: string
           price: number
-          image_url: string
-          description: string
-          long_description: string
-          data_ai_hint: string
-          is_featured?: boolean
-          is_best_seller?: boolean
-          created_at?: string
-          category_id?: string | null
+          product_id: string
+          quantity: number
         }
         Update: {
           id?: string
+          order_id?: string
+          price?: number
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          shipping_address_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          shipping_address_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          shipping_address_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_address_id_fkey"
+            columns: ["shipping_address_id"]
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          data_ai_hint: string
+          description: string
+          id: string
+          image_url: string
+          is_best_seller: boolean
+          is_featured: boolean
+          long_description: string
+          name: string
+          price: number
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          data_ai_hint: string
+          description: string
+          id?: string
+          image_url: string
+          is_best_seller?: boolean
+          is_featured?: boolean
+          long_description: string
+          name: string
+          price: number
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          data_ai_hint?: string
+          description?: string
+          id?: string
+          image_url?: string
+          is_best_seller?: boolean
+          is_featured?: boolean
+          long_description?: string
           name?: string
           price?: number
-          image_url?: string
-          description?: string
-          long_description?: string
-          data_ai_hint?: string
-          is_featured?: boolean
-          is_best_seller?: boolean
-          created_at?: string
-          category_id?: string | null
         }
         Relationships: [
           {
@@ -169,50 +326,90 @@ export type Database = {
           }
         ]
       }
-      testimonials: {
+      reviews: {
         Row: {
-          id: string
-          name: string
-          quote: string
-          rating: number
-          image_url: string
+          comment: string | null
           created_at: string
+          id: string
+          product_id: string
+          rating: number
+          user_id: string
         }
         Insert: {
+          comment?: string | null
+          created_at?: string
           id?: string
+          product_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      testimonials: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
           name: string
           quote: string
           rating: number
-          image_url: string
+        }
+        Insert: {
           created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          quote: string
+          rating: number
         }
         Update: {
+          created_at?: string
           id?: string
+          image_url?: string
           name?: string
           quote?: string
           rating?: number
-          image_url?: string
-          created_at?: string
         }
         Relationships: []
       }
       user_profiles: {
         Row: {
-          id: string
-          full_name: string | null
           avatar_url: string | null
+          full_name: string | null
+          id: string
           role: string
         }
         Insert: {
-          id: string
-          full_name?: string | null
           avatar_url?: string | null
+          full_name?: string | null
+          id: string
           role?: string
         }
         Update: {
-          id?: string
-          full_name?: string | null
           avatar_url?: string | null
+          full_name?: string | null
+          id?: string
           role?: string
         }
         Relationships: [
@@ -224,15 +421,58 @@ export type Database = {
           }
         ]
       }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlists_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_order_stats: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          total_spent: number
+          total_orders: number
+          pending_orders: number
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      order_status: "pending" | "shipped" | "delivered" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
