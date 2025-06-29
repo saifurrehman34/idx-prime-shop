@@ -106,28 +106,19 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="#" legacyBehavior passHref>
+                <Link href="/#flash-sales" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Contact
+                    Today's Sales
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
                <NavigationMenuItem>
                 <Link href="#" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    About
+                    Features
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
-              {!user && (
-                 <NavigationMenuItem>
-                  <Link href="/signup" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Sign Up
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              )}
             </NavigationMenuList>
           </NavigationMenu>
         </nav>

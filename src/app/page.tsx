@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/server';
 import type { Product, HeroSlide } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { HomeHeroSection } from '@/components/home-hero-section';
 
 export default async function Home() {
   const supabase = createClient();
@@ -39,79 +40,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col">
       <div className="w-full">
-        <Carousel className="w-full" opts={{ loop: true }}>
-            <CarouselContent>
-                {heroSlides.length > 0 ? heroSlides.map(slide => (
-                  <CarouselItem key={slide.id}>
-                    <div className="relative h-[80vh] min-h-[600px] w-full">
-                      <Image
-                        src={slide.image_url}
-                        alt={slide.title}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={slide.image_ai_hint || 'shopping technology'}
-                        priority
-                      />
-                      <div className="relative z-10 flex h-full w-full items-center">
-                        <div className="container mx-auto px-4">
-                           <div className="max-w-2xl text-left text-white">
-                                <h1 className="text-5xl md:text-6xl font-bold tracking-tight [text-shadow:2px_2px_8px_rgba(0,0,0,0.6)]">
-                                  {slide.title}
-                                </h1>
-                                <p className="mt-6 max-w-lg text-xl font-medium [text-shadow:1px_1px_4px_rgba(0,0,0,0.6)]">
-                                  {slide.subtitle}
-                                </p>
-                                <div className="mt-10 flex flex-wrap justify-start gap-4">
-                                  <Button asChild size="lg">
-                                    <Link href={slide.link || '/products'}>Shop Now</Link>
-                                  </Button>
-                                  <Button asChild size="lg" variant="outline" className="border-2 border-white bg-black/20 text-white hover:bg-white hover:text-black">
-                                    <Link href="/products">Learn More</Link>
-                                  </Button>
-                                </div>
-                            </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                )) : (
-                   <CarouselItem>
-                      <div className="relative h-[80vh] min-h-[600px] w-full">
-                        <Image
-                          src="https://source.unsplash.com/featured/1600x900/?fashion,model"
-                          alt="Latest Tech Deals"
-                          fill
-                          className="object-cover"
-                          data-ai-hint="fashion model"
-                          priority
-                        />
-                        <div className="relative z-10 flex h-full w-full items-center">
-                            <div className="container mx-auto px-4">
-                               <div className="max-w-2xl text-left text-white">
-                                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight [text-shadow:2px_2px_8px_rgba(0,0,0,0.6)]">
-                                      Discover the Latest Tech Deals
-                                    </h1>
-                                    <p className="mt-6 max-w-lg text-xl font-medium [text-shadow:1px_1px_4px_rgba(0,0,0,0.6)]">
-                                      Shop top-rated smartphones, laptops, and accessories at unbeatable prices.
-                                    </p>
-                                    <div className="mt-10 flex flex-wrap justify-start gap-4">
-                                      <Button asChild size="lg">
-                                        <Link href="/products">Shop Now</Link>
-                                      </Button>
-                                      <Button asChild size="lg" variant="outline" className="border-2 border-white bg-black/20 text-white hover:bg-white hover:text-black">
-                                        <Link href="/products">Learn More</Link>
-                                      </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                      </div>
-                  </CarouselItem>
-                )}
-            </CarouselContent>
-            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 text-white bg-black/20 hover:bg-black/50 border-white/50" />
-            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 text-white bg-black/20 hover:bg-black/50 border-white/50" />
-        </Carousel>
+        <HomeHeroSection slides={heroSlides} />
       </div>
       
       <div className="container mx-auto px-4 mt-16 md:mt-32 space-y-16 md:space-y-24">
@@ -135,8 +64,6 @@ export default async function Home() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute -top-14 right-14" />
-            <CarouselNext className="absolute -top-14 right-2" />
           </Carousel>
         </section>
         <Separator />
