@@ -5,6 +5,8 @@ import { AddToCartButton } from '@/components/add-to-cart-button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/types';
+import { createClient as createGenericClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -55,7 +57,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
 }
 
 export async function generateStaticParams() {
-    const supabase = createClient();
+    // Create a new supabase client instance for build-time data fetching
+    // This client doesn't rely on cookies and is safe to use in generateStaticParams
+    const supabase = createGenericClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const { data: products, error } = await supabase.from('products').select('id');
 
     if (error || !products) {
