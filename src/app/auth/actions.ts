@@ -9,22 +9,43 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string;
   const supabase = createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  if (error) {
+  if (signInError) {
     let message = 'Could not authenticate user.';
-    if (error.message.includes('Invalid login credentials')) {
+    if (signInError.message.includes('Invalid login credentials')) {
         message = 'Invalid email or password. Please try again.';
     }
     return redirect(`/login?message=${encodeURIComponent(message)}`);
   }
+  
+  if (!signInData.user) {
+    return redirect(`/login?message=${encodeURIComponent('Could not authenticate user. No user data found.')}`);
+  }
 
-  // On successful login, redirect to the homepage.
-  // The middleware will then handle redirecting to the correct dashboard.
-  return redirect('/');
+  // After successful login, get user profile to determine role
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', signInData.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    // Even if login is successful, if we can't get the profile, something is wrong.
+    // Log them out and send to login with an error message.
+    await supabase.auth.signOut();
+    return redirect(`/login?message=${encodeURIComponent('Could not retrieve user profile. Please try again.')}`);
+  }
+
+  // Redirect based on role
+  if (profile.role === 'admin') {
+    return redirect('/admin/dashboard');
+  }
+
+  return redirect('/user/home');
 }
 
 export async function signup(formData: FormData) {
