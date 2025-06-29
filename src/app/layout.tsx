@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
-import { CartProvider } from "@/context/cart-context";
+import { Providers } from './providers';
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { cn } from "@/lib/utils";
@@ -32,14 +31,13 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased", "min-h-screen bg-background")}>
-        <CartProvider>
+        <Providers>
             <div className="relative flex min-h-screen flex-col">
               <Header categories={categories} user={user} />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
-            <Toaster />
-        </CartProvider>
+        </Providers>
       </body>
     </html>
   );

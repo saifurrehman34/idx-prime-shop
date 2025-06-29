@@ -26,13 +26,21 @@ export async function login(formData: FormData) {
     return redirect('/login?message=Login successful, but could not retrieve user data.');
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
-  if (profile?.role === 'admin') {
+  // If the profile doesn't exist or there was an error fetching it,
+  // sign out and redirect to login with an error message.
+  // This is a safeguard against incomplete signups or database issues.
+  if (profileError || !profile) {
+    await supabase.auth.signOut();
+    return redirect('/login?message=Your user profile could not be found. Please contact support.');
+  }
+
+  if (profile.role === 'admin') {
     return redirect('/admin/dashboard');
   }
 

@@ -2,7 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/app/auth/actions';
 import { executeSql } from '@/app/admin/actions';
@@ -31,6 +31,7 @@ function ExecuteSqlButton() {
 export default function AdminDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const [state, formAction] = useFormState(executeSql, {
     message: '',
@@ -42,14 +43,14 @@ export default function AdminDashboardPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        redirect('/login');
+        router.push('/login');
       } else {
         setUser(user);
       }
       setLoading(false);
     };
     checkUser();
-  }, []);
+  }, [router]);
 
   if (loading) {
     return (
