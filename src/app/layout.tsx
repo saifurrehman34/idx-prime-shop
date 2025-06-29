@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/cart-context";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -26,7 +27,8 @@ export default function RootLayout({
         <CartProvider>
             <div className="relative flex min-h-screen flex-col">
               <Header />
-              <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
+              <main className="flex-1">{children}</main>
+              <Footer />
             </div>
             <Toaster />
         </CartProvider>

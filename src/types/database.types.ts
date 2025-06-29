@@ -9,6 +9,117 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brands: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          id: string
+          title: string
+          content: string
+          image_url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          content: string
+          image_url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string
+          image_url?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          image_url: string
+          data_ai_hint: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          image_url: string
+          data_ai_hint: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          image_url?: string
+          data_ai_hint?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          id: string
+          email: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          image_url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          image_url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          image_url?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           id: string
@@ -18,7 +129,9 @@ export type Database = {
           description: string
           long_description: string
           data_ai_hint: string
+          is_featured: boolean
           created_at: string
+          category_id: string | null
         }
         Insert: {
           id?: string
@@ -28,7 +141,9 @@ export type Database = {
           description: string
           long_description: string
           data_ai_hint: string
+          is_featured?: boolean
           created_at?: string
+          category_id?: string | null
         }
         Update: {
           id?: string
@@ -38,6 +153,42 @@ export type Database = {
           description?: string
           long_description?: string
           data_ai_hint?: string
+          is_featured?: boolean
+          created_at?: string
+          category_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      testimonials: {
+        Row: {
+          id: string
+          name: string
+          quote: string
+          rating: number
+          image_url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          quote: string
+          rating: number
+          image_url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          quote?: string
+          rating?: number
+          image_url?: string
           created_at?: string
         }
         Relationships: []
