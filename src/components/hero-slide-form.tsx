@@ -76,7 +76,7 @@ export function HeroSlideForm({ slide }: HeroSlideFormProps) {
       
       <div className="space-y-2">
           <Label htmlFor="image_file">Slide Image</Label>
-          <Input id="image_file" name="image_file" type="file" accept="image/png, image/jpeg, image/webp" />
+          <Input id="image_file" name="image_file" type="file" accept=".png,.jpg,.jpeg,.webp" />
           {slide?.image_url && (
               <div className="mt-4 space-y-2">
                   <Label>Current Image</Label>

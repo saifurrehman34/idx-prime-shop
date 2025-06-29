@@ -121,7 +121,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
         </div>
         <div className="space-y-2">
             <Label htmlFor="image_file">Product Images</Label>
-            <Input id="image_file" name="image_file" type="file" accept="image/png, image/jpeg, image/webp" multiple />
+            <Input id="image_file" name="image_file" type="file" accept=".png,.jpg,.jpeg,.webp" multiple />
             {isEditing && (
                 <div className="mt-4 space-y-2">
                     <Label>Current Images</Label>
