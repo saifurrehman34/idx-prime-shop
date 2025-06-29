@@ -38,12 +38,12 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      <div className="container mx-auto px-4 pt-8">
+      <div className="w-full">
         <Carousel className="w-full" opts={{ loop: true }}>
             <CarouselContent>
                 {heroSlides.length > 0 ? heroSlides.map(slide => (
                   <CarouselItem key={slide.id}>
-                    <div className="relative h-[60vh] min-h-[400px] w-full rounded-lg overflow-hidden">
+                    <div className="relative h-[65vh] min-h-[450px] w-full">
                       <Image
                         src={slide.image_url}
                         alt={slide.title}
@@ -52,52 +52,60 @@ export default async function Home() {
                         data-ai-hint={slide.image_ai_hint || 'shopping technology'}
                         priority
                       />
-                      <div className="absolute inset-0 bg-black/50" />
-                      <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
-                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
-                          {slide.title}
-                        </h1>
-                        <p className="mt-4 max-w-xl text-lg md:text-xl text-neutral-200">
-                          {slide.subtitle}
-                        </p>
-                        <div className="mt-8 flex flex-wrap justify-center gap-4">
-                          <Button asChild size="lg">
-                            <Link href={slide.link || '/products'}>Shop Now</Link>
-                          </Button>
-                          <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
-                            <Link href="/products">Learn More</Link>
-                          </Button>
+                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="relative z-10 flex h-full w-full items-center text-white">
+                        <div className="container mx-auto px-4">
+                           <div className="max-w-xl text-left">
+                                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                                  {slide.title}
+                                </h1>
+                                <p className="mt-4 max-w-lg text-lg text-neutral-200">
+                                  {slide.subtitle}
+                                </p>
+                                <div className="mt-8 flex flex-wrap justify-start gap-4">
+                                  <Button asChild size="lg">
+                                    <Link href={slide.link || '/products'}>Shop Now</Link>
+                                  </Button>
+                                  <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
+                                    <Link href="/products">Learn More</Link>
+                                  </Button>
+                                </div>
+                            </div>
                         </div>
                       </div>
                     </div>
                   </CarouselItem>
                 )) : (
                    <CarouselItem>
-                      <div className="relative h-[60vh] min-h-[400px] w-full rounded-lg overflow-hidden">
+                      <div className="relative h-[65vh] min-h-[450px] w-full">
                         <Image
-                          src="https://source.unsplash.com/featured/1600x900/?gadgets"
+                          src="https://source.unsplash.com/featured/1600x900/?fashion,model"
                           alt="Latest Tech Deals"
                           fill
                           className="object-cover"
-                          data-ai-hint="gadgets technology"
+                          data-ai-hint="fashion model"
                           priority
                         />
-                        <div className="absolute inset-0 bg-black/50" />
-                        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
-                          <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
-                            Discover the Latest Tech Deals
-                          </h1>
-                          <p className="mt-4 max-w-xl text-lg md:text-xl text-neutral-200">
-                            Shop top-rated smartphones, laptops, and accessories at unbeatable prices.
-                          </p>
-                          <div className="mt-8 flex flex-wrap justify-center gap-4">
-                            <Button asChild size="lg">
-                              <Link href="/products">Shop Now</Link>
-                            </Button>
-                            <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
-                              <Link href="/products">Learn More</Link>
-                            </Button>
-                          </div>
+                        <div className="absolute inset-0 bg-black/40" />
+                        <div className="relative z-10 flex h-full w-full items-center text-white">
+                            <div className="container mx-auto px-4">
+                               <div className="max-w-xl text-left">
+                                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                                      Discover the Latest Tech Deals
+                                    </h1>
+                                    <p className="mt-4 max-w-lg text-lg text-neutral-200">
+                                      Shop top-rated smartphones, laptops, and accessories at unbeatable prices.
+                                    </p>
+                                    <div className="mt-8 flex flex-wrap justify-start gap-4">
+                                      <Button asChild size="lg">
+                                        <Link href="/products">Shop Now</Link>
+                                      </Button>
+                                      <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
+                                        <Link href="/products">Learn More</Link>
+                                      </Button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                       </div>
                   </CarouselItem>
