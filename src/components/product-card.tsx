@@ -70,7 +70,7 @@ export function ProductCard({ product, isFavorited: initialIsFavorited }: Produc
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
             data-ai-hint={product.dataAiHint}
           />
