@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { DataTable } from './data-table';
 import { columns, type Product } from './columns';
 
@@ -29,9 +31,14 @@ export default async function AdminProductsPage() {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardDescription>Manage your products.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Products</CardTitle>
+                    <CardDescription>Manage your products.</CardDescription>
+                </div>
+                <Button asChild>
+                    <Link href="/admin/products/add">Add Product</Link>
+                </Button>
             </CardHeader>
             <CardContent>
                 <DataTable columns={columns} data={products} />
