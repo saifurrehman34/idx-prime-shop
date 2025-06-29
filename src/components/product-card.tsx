@@ -20,9 +20,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
   
   const [reviewsCount, setReviewsCount] = useState(0);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
+    // These will only run on the client, after initial hydration
     setReviewsCount(Math.floor(Math.random() * (1500 - 100 + 1)) + 100);
+    setDiscount(Math.floor(Math.random() * 30) + 10);
   }, []);
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,8 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const rating = 4.5;
-  const discount = Math.floor(Math.random() * 30) + 10; // Random discount between 10-40%
-
+  
   return (
     <Card className="h-full flex flex-col overflow-hidden border-none shadow-none bg-transparent">
       <div className="relative aspect-square w-full overflow-hidden bg-secondary rounded-md group">
@@ -51,9 +53,11 @@ export function ProductCard({ product }: ProductCardProps) {
             data-ai-hint={product.dataAiHint}
           />
         </Link>
-        <div className="absolute top-3 left-3">
-            <Badge variant="destructive">-{discount}%</Badge>
-        </div>
+        {discount > 0 && (
+            <div className="absolute top-3 left-3">
+                <Badge variant="destructive">-{discount}%</Badge>
+            </div>
+        )}
         <div className="absolute top-3 right-3 flex flex-col gap-2">
             <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full">
                 <Heart className="h-4 w-4"/>
@@ -77,7 +81,9 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="mt-2 flex-grow">
           <span className="text-base font-medium text-primary">${product.price.toFixed(2)}</span>
-          <span className="text-base text-muted-foreground line-through ml-3">${(product.price * (1 + discount / 100)).toFixed(2)}</span>
+          {discount > 0 && (
+            <span className="text-base text-muted-foreground line-through ml-3">${(product.price * (1 + discount / 100)).toFixed(2)}</span>
+          )}
         </div>
         
         {reviewsCount > 0 && (
