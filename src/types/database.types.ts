@@ -241,7 +241,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          shipping_address_id: string
+          shipping_address_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           user_id: string
@@ -249,7 +249,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          shipping_address_id: string
+          shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount: number
           user_id: string
@@ -257,7 +257,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          shipping_address_id?: string
+          shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           user_id?: string
@@ -460,6 +460,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      execute_sql: {
+        Args: {
+          sql_query: string
+        }
+        Returns: Record<string, unknown>[]
+      }
+      get_admin_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_users: number
+          total_products: number
+          total_orders: number
+          total_revenue: number
+        }[]
+      }
       get_user_order_stats: {
         Args: {
           p_user_id: string
@@ -552,7 +567,7 @@ export type Enums<
     | keyof Database["public"]["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
     : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
