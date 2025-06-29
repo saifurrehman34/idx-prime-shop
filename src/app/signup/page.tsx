@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useFormStatus } from 'react-dom';
 import { signup } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,12 +13,24 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+
+function SignupButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {pending ? 'Creating Account...' : 'Create an account'}
+    </Button>
+  );
+}
 
 export default function SignupPage({
-    searchParams,
-  }: {
-    searchParams: { message: string };
-  }) {
+  searchParams,
+}: {
+  searchParams: { message: string };
+}) {
   return (
     <div className="flex items-center justify-center py-12">
       <Card className="mx-auto max-w-sm">
@@ -42,13 +57,11 @@ export default function SignupPage({
               <Input id="password" type="password" name="password" required />
             </div>
             {searchParams.message && (
-              <p className="p-4 bg-foreground/10 text-destructive text-center rounded-md text-sm">
+              <p className="p-4 bg-red-100 text-red-800 text-center rounded-md text-sm">
                 {searchParams.message}
               </p>
             )}
-            <Button type="submit" className="w-full">
-              Create an account
-            </Button>
+            <SignupButton />
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}

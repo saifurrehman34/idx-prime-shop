@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useFormStatus } from 'react-dom';
 import { login } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +13,18 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+
+function LoginButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {pending ? 'Logging in...' : 'Login'}
+    </Button>
+  );
+}
 
 export default function LoginPage({
   searchParams,
@@ -54,9 +69,7 @@ export default function LoginPage({
                 {searchParams.message}
               </p>
             )}
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
+            <LoginButton />
           </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
