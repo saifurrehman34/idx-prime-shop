@@ -43,54 +43,68 @@ export default async function Home() {
             <CarouselContent>
                 {heroSlides.length > 0 ? heroSlides.map(slide => (
                   <CarouselItem key={slide.id}>
-                      <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
-                         <div className="flex flex-col gap-5 z-10">
-                             <p className="font-semibold text-sm uppercase tracking-wider">{slide.subtitle}</p>
-                             <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
-                                 {slide.title}
-                             </h1>
-                             <Link href={slide.link || '#'} className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
-                                Shop Now <ArrowRight className="h-4 w-4" />
-                             </Link>
-                         </div>
-                         <Image
-                             src={slide.image_url}
-                             alt={slide.title}
-                             className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
-                             width={400}
-                             height={344}
-                             data-ai-hint={slide.image_ai_hint || 'product image'}
-                             priority
-                         />
+                    <div className="relative h-[60vh] min-h-[400px] w-full rounded-lg overflow-hidden">
+                      <Image
+                        src={slide.image_url}
+                        alt={slide.title}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={slide.image_ai_hint || 'shopping technology'}
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-black/50" />
+                      <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
+                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
+                          {slide.title}
+                        </h1>
+                        <p className="mt-4 max-w-xl text-lg md:text-xl text-neutral-200">
+                          {slide.subtitle}
+                        </p>
+                        <div className="mt-8 flex flex-wrap justify-center gap-4">
+                          <Button asChild size="lg">
+                            <Link href={slide.link || '/products'}>Shop Now</Link>
+                          </Button>
+                          <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
+                            <Link href="/products">Learn More</Link>
+                          </Button>
+                        </div>
                       </div>
+                    </div>
                   </CarouselItem>
                 )) : (
                    <CarouselItem>
-                    <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
-                       <div className="flex flex-col gap-5 z-10">
-                           <div className="flex items-center gap-4">
-                               <Apple className="h-8 w-8 text-white"/>
-                               <p className="font-semibold text-sm uppercase tracking-wider">iPhone 14 Series</p>
-                           </div>
-                           <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
-                               Up to 10% off Voucher
-                           </h1>
-                           <Link href="/products" className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
-                               Shop Now <ArrowRight className="h-4 w-4"/>
-                           </Link>
-                       </div>
-                       <Image
-                           src="https://source.unsplash.com/featured/800x600/?iphone"
-                           alt="iPhone 14"
-                           className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
-                           width={400}
-                           height={344}
-                           data-ai-hint="smartphone product"
-                       />
-                    </div>
-                </CarouselItem>
+                      <div className="relative h-[60vh] min-h-[400px] w-full rounded-lg overflow-hidden">
+                        <Image
+                          src="https://source.unsplash.com/featured/1600x900/?gadgets"
+                          alt="Latest Tech Deals"
+                          fill
+                          className="object-cover"
+                          data-ai-hint="gadgets technology"
+                          priority
+                        />
+                        <div className="absolute inset-0 bg-black/50" />
+                        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
+                          <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
+                            Discover the Latest Tech Deals
+                          </h1>
+                          <p className="mt-4 max-w-xl text-lg md:text-xl text-neutral-200">
+                            Shop top-rated smartphones, laptops, and accessories at unbeatable prices.
+                          </p>
+                          <div className="mt-8 flex flex-wrap justify-center gap-4">
+                            <Button asChild size="lg">
+                              <Link href="/products">Shop Now</Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
+                              <Link href="/products">Learn More</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                  </CarouselItem>
                 )}
             </CarouselContent>
+            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 text-white bg-black/20 hover:bg-black/50 border-white/50" />
+            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 text-white bg-black/20 hover:bg-black/50 border-white/50" />
         </Carousel>
       </div>
       
