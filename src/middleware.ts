@@ -52,14 +52,18 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ['/login', '/signup', '/products'];
-  const isPublicPath = pathname === '/' || publicRoutes.some(p => pathname.startsWith(p));
-
+  const publicRoutes = ['/products'];
   const authRoutes = ['/login', '/signup'];
+  const isPublicRoute = publicRoutes.some(p => pathname.startsWith(p));
+  const isAuthRoute = authRoutes.includes(pathname);
   const isAdminRoute = pathname.startsWith('/admin');
 
-  // If the user is not logged in and is trying to access a protected route, redirect to login
-  if (!user && !isPublicPath) {
+  // If the user is not logged in, they can only access the homepage, auth routes, and public routes.
+  if (!user) {
+    if (pathname === '/' || isAuthRoute || isPublicRoute) {
+      return response; // Allow access
+    }
+    // For any other route, redirect to login.
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
@@ -72,24 +76,34 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
+    // If there's an issue fetching the profile, log them out and send to login with an error.
+    // This is a safeguard against incomplete signups or database issues.
     if (error || !profile) {
       await supabase.auth.signOut();
       const redirectUrl = new URL('/login', request.url);
-      redirectUrl.searchParams.set('message', 'Could not find user profile.');
+      redirectUrl.searchParams.set('message', 'Could not find user profile. Please try logging in again.');
       return NextResponse.redirect(redirectUrl);
     }
     
     const userRole = profile.role;
 
-    // If on an auth route (/login, /signup), redirect to the appropriate dashboard
-    if (authRoutes.includes(pathname)) {
-      if (userRole === 'admin') {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      }
-      return NextResponse.redirect(new URL('/user/home', request.url));
+    // If a logged-in user tries to access an auth route (/login, /signup), redirect them to their dashboard.
+    if (isAuthRoute) {
+        if (userRole === 'admin') {
+            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+        }
+        return NextResponse.redirect(new URL('/user/home', request.url));
     }
     
-    // If a non-admin tries to access an admin route, redirect them
+    // If a logged-in user is on the homepage, redirect them to their dashboard.
+    if (pathname === '/') {
+       if (userRole === 'admin') {
+            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+        }
+        return NextResponse.redirect(new URL('/user/home', request.url));
+    }
+
+    // If a non-admin tries to access an admin route, redirect them away.
     if (isAdminRoute && userRole !== 'admin') {
       return NextResponse.redirect(new URL('/user/home', request.url));
     }
