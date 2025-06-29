@@ -1,3 +1,4 @@
+
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ProductForm } from '@/components/product-form';
 import type { Category, Product } from '@/types';
