@@ -63,7 +63,7 @@ export default async function Home() {
                           Shop Now <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
-                      <Image src="https://placehold.co/500x300.png" alt="iPhone 14" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="smartphone product" />
+                      <Image src="https://source.unsplash.com/featured/800x600/?smartphone" alt="iPhone 14" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="smartphone product" />
                    </div>
                 </CarouselItem>
                 <CarouselItem>
@@ -78,7 +78,7 @@ export default async function Home() {
                           Shop Now <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
-                      <Image src="https://placehold.co/500x300.png" alt="Headset" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="gaming headset" />
+                      <Image src="https://source.unsplash.com/featured/800x600/?headset" alt="Headset" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="gaming headset" />
                    </div>
                 </CarouselItem>
               </CarouselContent>
