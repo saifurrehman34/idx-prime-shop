@@ -1,20 +1,62 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    // This should not happen if the environment variables are set up correctly.
+    console.error('Missing Supabase URL or Anon Key')
+    return response;
+  }
+
+  const supabase = createServerClient(
+    supabaseUrl,
+    supabaseKey,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+
+  // Refresh session if expired - required for Server Components
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { pathname } = request.nextUrl;
 
-  // Create a Supabase client and refresh the session
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
   const publicRoutes = ['/login', '/signup', '/products'];
-  // The root path '/' and any path starting with /products are public
   const isPublicPath = pathname === '/' || publicRoutes.some(p => pathname.startsWith(p));
 
   const authRoutes = ['/login', '/signup'];
   const isAdminRoute = pathname.startsWith('/admin');
-  const isUserRoute = pathname.startsWith('/user');
 
   // If the user is not logged in and is trying to access a protected route, redirect to login
   if (!user && !isPublicPath) {
@@ -30,10 +72,11 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    // If there's an error fetching the profile or no profile exists, sign out and redirect
     if (error || !profile) {
       await supabase.auth.signOut();
-      return NextResponse.redirect(new URL('/login?message=Could not find user profile.', request.url));
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('message', 'Could not find user profile.');
+      return NextResponse.redirect(redirectUrl);
     }
     
     const userRole = profile.role;
@@ -53,7 +96,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow the request to continue
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

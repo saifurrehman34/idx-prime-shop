@@ -15,18 +15,16 @@ export default async function Home() {
   
   const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('name');
   const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(4);
-  const { data: bestSellersData, error: bestSellersError } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(4);
   const { data: newArrivalsData, error: newArrivalsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(4);
 
-  const error = categoriesError || featuredError || newArrivalsError || bestSellersError;
+  const error = categoriesError || featuredError || newArrivalsError;
   if (error) {
     console.error('Error fetching homepage data:', error);
   }
 
   const categories: Category[] = categoriesData || [];
-  const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint, is_best_seller: p.is_best_seller })) || [];
-  const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint, is_best_seller: p.is_best_seller })) || [];
-  const newArrivals: Product[] = newArrivalsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint, is_best_seller: p.is_best_seller })) || [];
+  const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const newArrivals: Product[] = newArrivalsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
 
   return (
     <div className="flex flex-col gap-16 md:gap-24">
@@ -96,21 +94,6 @@ export default async function Home() {
           )}
         </section>
         
-        {/* Best Sellers Section */}
-        <section id="best-sellers">
-          <h2 className="text-3xl font-bold font-headline text-center mb-10">Best Sellers</h2>
-          {bestSellers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {bestSellers.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : !error && (
-             <p className="text-center text-muted-foreground">No best sellers found.</p>
-          )}
-        </section>
-
-
         {/* New Arrivals Section */}
         <section id="new-arrivals">
           <h2 className="text-3xl font-bold font-headline text-center mb-10">New Arrivals</h2>
