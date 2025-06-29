@@ -66,7 +66,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link href="#new-arrivals" legacyBehavior passHref>
+                  <Link href="#new-arrivals" asChild>
                     <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "bg-transparent hover:bg-white/10 focus:bg-white/10")}>
                       New Arrivals
                     </NavigationMenuLink>
