@@ -46,46 +46,34 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // This is the crucial part that refreshes the session.
   const { data: { user } } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
-  const authRoutes = ['/login', '/signup']
-  const isAuthRoute = authRoutes.includes(pathname);
+  
   const isAdminRoute = pathname.startsWith('/admin')
   const isUserDashboardRoute = pathname.startsWith('/user')
-  const isProtectedRoute = isAdminRoute || isUserDashboardRoute;
+  const isProtectedRoute = isAdminRoute || isUserDashboardRoute
+  const isAuthRoute = pathname === '/login' || pathname === '/signup'
 
-  // If user is not logged in and tries to access a protected route, redirect to login.
+  // If user is not logged in and tries to access a protected route
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // If user is logged in
   if (user) {
-    // If a logged-in user tries to access /login or /signup, redirect them to their home page.
+    // If a logged-in user tries to access an auth route, redirect them away.
     if (isAuthRoute) {
-      // We first need to check their role to redirect to the correct dashboard
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-        
-      if (profile?.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      }
-      return NextResponse.redirect(new URL('/user/home', request.url));
+        // We need to know their role to redirect them to the correct dashboard.
+        const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
+        if (profile?.role === 'admin') {
+            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+        }
+        return NextResponse.redirect(new URL('/user/home', request.url))
     }
     
     // If a non-admin user tries to access an admin route, redirect them.
     if (isAdminRoute) {
-        const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
+        const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
         if (profile?.role !== 'admin') {
             return NextResponse.redirect(new URL('/user/home', request.url))
         }
