@@ -54,18 +54,18 @@ export default async function Home() {
                       />
                       <div className="relative z-10 flex h-full w-full items-center">
                         <div className="container mx-auto px-4">
-                           <div className="max-w-xl text-left">
-                                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+                           <div className="max-w-2xl text-left text-white">
+                                <h1 className="text-5xl md:text-6xl font-bold tracking-tight [text-shadow:2px_2px_8px_rgba(0,0,0,0.6)]">
                                   {slide.title}
                                 </h1>
-                                <p className="mt-4 max-w-lg text-lg text-muted-foreground">
+                                <p className="mt-6 max-w-lg text-xl font-medium [text-shadow:1px_1px_4px_rgba(0,0,0,0.6)]">
                                   {slide.subtitle}
                                 </p>
-                                <div className="mt-8 flex flex-wrap justify-start gap-4">
+                                <div className="mt-10 flex flex-wrap justify-start gap-4">
                                   <Button asChild size="lg">
                                     <Link href={slide.link || '/products'}>Shop Now</Link>
                                   </Button>
-                                  <Button asChild size="lg" variant="outline">
+                                  <Button asChild size="lg" variant="outline" className="border-2 border-white bg-black/20 text-white hover:bg-white hover:text-black">
                                     <Link href="/products">Learn More</Link>
                                   </Button>
                                 </div>
@@ -87,18 +87,18 @@ export default async function Home() {
                         />
                         <div className="relative z-10 flex h-full w-full items-center">
                             <div className="container mx-auto px-4">
-                               <div className="max-w-xl text-left">
-                                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+                               <div className="max-w-2xl text-left text-white">
+                                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight [text-shadow:2px_2px_8px_rgba(0,0,0,0.6)]">
                                       Discover the Latest Tech Deals
                                     </h1>
-                                    <p className="mt-4 max-w-lg text-lg text-muted-foreground">
+                                    <p className="mt-6 max-w-lg text-xl font-medium [text-shadow:1px_1px_4px_rgba(0,0,0,0.6)]">
                                       Shop top-rated smartphones, laptops, and accessories at unbeatable prices.
                                     </p>
-                                    <div className="mt-8 flex flex-wrap justify-start gap-4">
+                                    <div className="mt-10 flex flex-wrap justify-start gap-4">
                                       <Button asChild size="lg">
                                         <Link href="/products">Shop Now</Link>
                                       </Button>
-                                      <Button asChild size="lg" variant="outline">
+                                      <Button asChild size="lg" variant="outline" className="border-2 border-white bg-black/20 text-white hover:bg-white hover:text-black">
                                         <Link href="/products">Learn More</Link>
                                       </Button>
                                     </div>
