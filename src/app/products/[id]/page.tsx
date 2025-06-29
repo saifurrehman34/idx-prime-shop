@@ -1,16 +1,32 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { products } from '@/lib/data';
+import { createClient } from '@/lib/supabase/server';
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import type { Product } from '@/types';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = products.find(p => p.id === params.id);
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const supabase = createClient();
+  const { data: productData, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', params.id)
+    .single();
 
-  if (!product) {
+  if (error || !productData) {
     notFound();
   }
+
+  const product: Product = {
+    id: productData.id,
+    name: productData.name,
+    price: productData.price,
+    imageUrl: productData.image_url,
+    description: productData.description,
+    longDescription: productData.long_description,
+    dataAiHint: productData.data_ai_hint,
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -40,7 +56,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 }
 
 export async function generateStaticParams() {
+    const supabase = createClient();
+    const { data: products, error } = await supabase.from('products').select('id');
+
+    if (error || !products) {
+        return [];
+    }
+
     return products.map(product => ({
-        id: product.id,
+        id: product.id.toString(),
     }));
 }
