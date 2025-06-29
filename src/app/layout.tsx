@@ -5,17 +5,23 @@ import { CartProvider } from "@/context/cart-context";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { cn } from "@/lib/utils";
+import { createClient } from '@/lib/supabase/server';
+import type { Category } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Verdant Market',
   description: 'Fresh and organic products delivered to you.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = createClient();
+  const { data: categoriesData } = await supabase.from('categories').select('*').order('name');
+  const categories: Category[] = categoriesData || [];
+
   return (
     <html lang="en">
       <head>
@@ -26,7 +32,7 @@ export default function RootLayout({
       <body className={cn("font-body antialiased", "min-h-screen bg-background")}>
         <CartProvider>
             <div className="relative flex min-h-screen flex-col">
-              <Header />
+              <Header categories={categories} />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
