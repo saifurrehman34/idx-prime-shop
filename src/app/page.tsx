@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones, Apple } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
-import { CategoryCard } from '@/components/category-card';
 import { Countdown } from '@/components/countdown';
 import { createClient } from '@/lib/supabase/server';
 import type { Product, Category } from '@/types';
@@ -39,67 +38,77 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      <div className="container mx-auto px-4 pt-8">
-        <Carousel className="w-full" opts={{ loop: true }}>
-            <CarouselContent>
-                <CarouselItem>
-                    <div className="bg-primary/10 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
-                        <div className="flex flex-col items-start text-left">
-                            <p className="font-semibold text-primary mb-2">Discover Freshness</p>
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
-                                The Best Organic Products, Online
-                            </h1>
-                            <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                                From farm to table, we deliver the freshest organic produce and pantry staples right to your doorstep.
-                            </p>
-                            <Button size="lg" asChild>
-                                <Link href="/products">
-                                    Shop All Products <ArrowRight className="ml-2"/>
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
-                            <Image
-                                src="https://source.unsplash.com/featured/800x600/?grocery,organic"
-                                alt="Fresh organic vegetables"
-                                fill
-                                className="object-cover"
-                                data-ai-hint="fresh vegetables"
-                            />
-                        </div>
-                    </div>
-                </CarouselItem>
-                <CarouselItem>
-                   <div className="bg-accent/20 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
-                        <div className="flex flex-col items-start text-left">
-                            <p className="font-semibold text-primary mb-2">Weekly Deals</p>
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
-                                Save Big on Your Favorite Greens
-                            </h1>
-                            <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                                Check out our weekly specials and enjoy amazing discounts on a wide range of products.
-                            </p>
-                            <Button size="lg" asChild>
-                                <Link href="/products">
-                                    View Deals <ArrowRight className="ml-2"/>
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
-                            <Image
-                                src="https://source.unsplash.com/featured/800x600/?farmers,market"
-                                alt="Farmer's Market"
-                                fill
-                                className="object-cover"
-                                data-ai-hint="farmers market"
-                            />
-                        </div>
-                    </div>
-                </CarouselItem>
-            </CarouselContent>
-            <CarouselPrevious className="left-4" />
-            <CarouselNext className="right-4" />
-        </Carousel>
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row gap-8 pt-8">
+            <aside className="w-full md:w-64">
+                <nav className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+                    {categories.map((category) => (
+                        <Button key={category.id} variant="ghost" asChild className="justify-start shrink-0">
+                             <Link href={`/products?category=${encodeURIComponent(category.name)}`}>{category.name}</Link>
+                        </Button>
+                    ))}
+                </nav>
+                <Separator className="mt-4 hidden md:block" />
+            </aside>
+            <main className="flex-1">
+                <Carousel className="w-full" opts={{ loop: true }}>
+                    <CarouselContent>
+                        <CarouselItem>
+                            <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
+                               <div className="flex flex-col gap-4 z-10">
+                                   <div className="flex items-center gap-4 text-white">
+                                       <Apple className="h-8 w-8"/>
+                                       <p>iPhone 14 Series</p>
+                                   </div>
+                                   <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
+                                       Up to 10% off Voucher
+                                   </h1>
+                                   <Button variant="link" asChild className="p-0 text-white h-auto justify-start">
+                                       <Link href="/products">
+                                           Shop Now <ArrowRight className="ml-2 h-4 w-4"/>
+                                       </Link>
+                                   </Button>
+                               </div>
+                               <Image
+                                   src="https://source.unsplash.com/featured/800x600/?iphone"
+                                   alt="iPhone 14"
+                                   className="absolute right-0 bottom-0 h-full w-auto object-contain z-0"
+                                   width={500}
+                                   height={300}
+                                   data-ai-hint="smartphone product"
+                               />
+                            </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                            <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
+                               <div className="flex flex-col gap-4 z-10">
+                                   <div className="flex items-center gap-4 text-white">
+                                       <Headphones className="h-8 w-8"/>
+                                       <p>Gaming Headset</p>
+                                   </div>
+                                   <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
+                                       Enhanced Audio Experience
+                                   </h1>
+                                   <Button variant="link" asChild className="p-0 text-white h-auto justify-start">
+                                       <Link href="/products">
+                                           Shop Now <ArrowRight className="ml-2 h-4 w-4"/>
+                                       </Link>
+                                   </Button>
+                               </div>
+                               <Image
+                                   src="https://source.unsplash.com/featured/800x600/?gaming,headset"
+                                   alt="Headset"
+                                   className="absolute right-0 bottom-0 h-full w-auto object-contain z-0"
+                                   width={500}
+                                   height={300}
+                                   data-ai-hint="gaming headset"
+                               />
+                            </div>
+                        </CarouselItem>
+                    </CarouselContent>
+                </Carousel>
+            </main>
+        </div>
       </div>
       
       <div className="container mx-auto px-4 mt-16 md:mt-32 space-y-16 md:space-y-24">
@@ -125,27 +134,6 @@ export default async function Home() {
             </CarouselContent>
             <CarouselPrevious className="absolute -top-14 right-14" />
             <CarouselNext className="absolute -top-14 right-2" />
-          </Carousel>
-        </section>
-        <Separator />
-
-        {/* Categories Section */}
-        <section id="categories-section">
-           <div className="flex items-center gap-4 mb-6">
-            <div className="w-5 h-10 bg-primary rounded"></div>
-            <p className="text-primary font-semibold">Categories</p>
-          </div>
-          <h2 className="text-3xl font-bold mb-10">Browse By Category</h2>
-          <Carousel opts={{ align: "start", slidesToScroll: "auto" }} className="w-full">
-            <CarouselContent className="-ml-4">
-              {categories.map(category => (
-                <CarouselItem key={category.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
-                  <CategoryCard category={category} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-             <CarouselPrevious className="absolute -top-16 right-14" />
-            <CarouselNext className="absolute -top-16 right-2" />
           </Carousel>
         </section>
         <Separator />
