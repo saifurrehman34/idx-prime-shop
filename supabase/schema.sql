@@ -1,241 +1,192 @@
--- Drop existing tables, types, and functions to start fresh.
-DROP TABLE IF EXISTS "public"."user_profiles" CASCADE;
+-- Drop existing tables, functions, and types
+DROP TABLE IF EXISTS "public"."wishlists" CASCADE;
+DROP TABLE IF EXISTS "public"."reviews" CASCADE;
+DROP TABLE IF EXISTS "public"."order_items" CASCADE;
+DROP TABLE IF EXISTS "public"."orders" CASCADE;
+DROP TABLE IF EXISTS "public"."addresses" CASCADE;
 DROP TABLE IF EXISTS "public"."products" CASCADE;
 DROP TABLE IF EXISTS "public"."categories" CASCADE;
-DROP TABLE IF EXISTS "public"."orders" CASCADE;
-DROP TABLE IF EXISTS "public"."order_items" CASCADE;
-DROP TABLE IF EXISTS "public"."addresses" CASCADE;
-DROP TABLE IF EXISTS "public"."reviews" CASCADE;
-DROP TABLE IF EXISTS "public"."wishlists" CASCADE;
-DROP TABLE IF EXISTS "public"."notifications" CASCADE;
+DROP TABLE IF EXISTS "public"."user_profiles" CASCADE;
 DROP TABLE IF EXISTS "public"."newsletter_subscribers" CASCADE;
-DROP TYPE IF EXISTS "public"."order_status" CASCADE;
-DROP FUNCTION IF EXISTS "public"."handle_new_user" CASCADE;
 DROP FUNCTION IF EXISTS "public"."get_user_order_stats" CASCADE;
-DROP FUNCTION IF EXISTS "public"."execute_sql" CASCADE;
+DROP TYPE IF EXISTS "public"."order_status" CASCADE;
 
-
--- Create ENUM for order status
-CREATE TYPE "public"."order_status" AS ENUM ('pending', 'shipped', 'delivered', 'cancelled');
-
--- Table for Categories
-CREATE TABLE "public"."categories" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-    "name" character varying NOT NULL,
-    "image_url" text NOT NULL,
-    "data_ai_hint" text NOT NULL,
-    CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
+-- Create ENUM types
+CREATE TYPE public.order_status AS ENUM (
+    'pending',
+    'shipped',
+    'delivered',
+    'cancelled'
 );
-ALTER TABLE "public"."categories" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to categories" ON "public"."categories" FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access to categories" ON "public"."categories" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
 
--- Table for Products
+-- Create Tables
+CREATE TABLE "public"."categories" (
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "name" character varying NOT NULL,
+    "image_url" character varying NOT NULL,
+    "data_ai_hint" character varying NOT NULL
+);
+ALTER TABLE "public"."categories" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."categories" ADD CONSTRAINT "categories_pkey" PRIMARY KEY (id);
+
 CREATE TABLE "public"."products" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "name" character varying NOT NULL,
     "description" text NOT NULL,
     "long_description" text NOT NULL,
-    "price" numeric NOT NULL,
-    "image_url" text NOT NULL,
-    "data_ai_hint" text NOT NULL,
-    "is_featured" boolean NOT NULL DEFAULT false,
-    "is_best_seller" boolean NOT NULL DEFAULT false,
-    "category_id" uuid,
-    CONSTRAINT "products_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id")
+    "price" real NOT NULL,
+    "image_url" character varying NOT NULL,
+    "data_ai_hint" character varying NOT NULL,
+    "is_featured" boolean DEFAULT false NOT NULL,
+    "is_best_seller" boolean DEFAULT false NOT NULL,
+    "category_id" uuid
 );
-ALTER TABLE "public"."products" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to products" ON "public"."products" FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access to products" ON "public"."products" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+ALTER TABLE "public"."products" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."products" ADD CONSTRAINT "products_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL;
 
--- Table for User Profiles
 CREATE TABLE "public"."user_profiles" (
     "id" uuid NOT NULL,
     "full_name" text,
     "avatar_url" text,
-    "role" text NOT NULL DEFAULT 'user',
-    CONSTRAINT "user_profiles_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "user_profiles_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
+    "role" character varying DEFAULT 'user' NOT NULL
 );
-ALTER TABLE "public"."user_profiles" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to read their own profile" ON "public"."user_profiles" FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Allow users to update their own profile" ON "public"."user_profiles" FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Allow admin full access to user_profiles" ON "public"."user_profiles" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+ALTER TABLE "public"."user_profiles" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."user_profiles" ADD CONSTRAINT "user_profiles_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."user_profiles" ADD CONSTRAINT "user_profiles_id_fkey" FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
-
--- Function to create a user profile when a new user signs up
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
-AS $$
-BEGIN
-  INSERT INTO public.user_profiles (id, full_name, avatar_url, role)
-  VALUES (new.id, new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'avatar_url', 'user');
-  RETURN new;
-END;
-$$;
-
--- Trigger to call the function on new user creation
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
--- Table for Addresses
 CREATE TABLE "public"."addresses" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "user_id" uuid NOT NULL,
-    "address_line_1" text NOT NULL,
-    "address_line_2" text,
-    "city" text NOT NULL,
-    "state" text NOT NULL,
-    "postal_code" text NOT NULL,
-    "country" text NOT NULL DEFAULT 'USA',
-    "is_default" boolean NOT NULL DEFAULT false,
-    CONSTRAINT "addresses_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "addresses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
+    "address_line_1" character varying NOT NULL,
+    "address_line_2" character varying,
+    "city" character varying NOT NULL,
+    "state" character varying NOT NULL,
+    "postal_code" character varying NOT NULL,
+    "country" character varying DEFAULT 'USA'::character varying NOT NULL,
+    "is_default" boolean DEFAULT false NOT NULL
 );
-ALTER TABLE "public"."addresses" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to manage their own addresses" ON "public"."addresses" FOR ALL USING (auth.uid() = user_id);
+ALTER TABLE "public"."addresses" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."addresses" ADD CONSTRAINT "addresses_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."addresses" ADD CONSTRAINT "addresses_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
--- Table for Orders
 CREATE TABLE "public"."orders" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "user_id" uuid NOT NULL,
-    "total_amount" numeric NOT NULL,
-    "status" public.order_status NOT NULL DEFAULT 'pending',
-    "shipping_address_id" uuid NOT NULL,
-    CONSTRAINT "orders_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE,
-    CONSTRAINT "orders_shipping_address_id_fkey" FOREIGN KEY ("shipping_address_id") REFERENCES "public"."addresses"("id")
+    "total_amount" real NOT NULL,
+    "status" public.order_status DEFAULT 'pending'::public.order_status NOT NULL,
+    "shipping_address_id" uuid NOT NULL
 );
-ALTER TABLE "public"."orders" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to see their own orders" ON "public"."orders" FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Allow admins to manage all orders" ON "public"."orders" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+ALTER TABLE "public"."orders" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."orders" ADD CONSTRAINT "orders_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_shipping_address_id_fkey" FOREIGN KEY (shipping_address_id) REFERENCES public.addresses(id) ON DELETE RESTRICT;
 
--- Table for Order Items
 CREATE TABLE "public"."order_items" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
     "order_id" uuid NOT NULL,
     "product_id" uuid NOT NULL,
     "quantity" integer NOT NULL,
-    "price" numeric NOT NULL,
-    CONSTRAINT "order_items_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE CASCADE,
-    CONSTRAINT "order_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id")
+    "price" real NOT NULL
 );
-ALTER TABLE "public"."order_items" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to see their own order items" ON "public"."order_items" FOR SELECT USING (
-  (SELECT user_id FROM public.orders WHERE id = order_id) = auth.uid()
-);
-CREATE POLICY "Allow admin to manage all order items" ON "public"."order_items" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+ALTER TABLE "public"."order_items" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."order_items" ADD CONSTRAINT "order_items_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
+ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_product_id_fkey" FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
 
-
--- Table for Reviews
 CREATE TABLE "public"."reviews" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "user_id" uuid NOT NULL,
     "product_id" uuid NOT NULL,
-    "rating" integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    "rating" integer NOT NULL,
     "comment" text,
-    CONSTRAINT "reviews_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "reviews_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE,
-    CONSTRAINT "reviews_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE
+    CONSTRAINT "reviews_rating_check" CHECK (((rating >= 1) AND (rating <= 5)))
 );
-ALTER TABLE "public"."reviews" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to reviews" ON "public"."reviews" FOR SELECT USING (true);
-CREATE POLICY "Allow users to manage their own reviews" ON "public"."reviews" FOR ALL USING (auth.uid() = user_id);
+ALTER TABLE "public"."reviews" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."reviews" ADD CONSTRAINT "reviews_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."reviews" ADD CONSTRAINT "reviews_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE "public"."reviews" ADD CONSTRAINT "reviews_product_id_fkey" FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
 
--- Table for Wishlists
 CREATE TABLE "public"."wishlists" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "user_id" uuid NOT NULL,
-    "product_id" uuid NOT NULL,
-    CONSTRAINT "wishlists_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "wishlists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE,
-    CONSTRAINT "wishlists_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE
+    "product_id" uuid NOT NULL
 );
-ALTER TABLE "public"."wishlists" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to manage their own wishlist" ON "public"."wishlists" FOR ALL USING (auth.uid() = user_id);
+ALTER TABLE "public"."wishlists" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."wishlists" ADD CONSTRAINT "wishlists_pkey" PRIMARY KEY (id);
+ALTER TABLE "public"."wishlists" ADD CONSTRAINT "wishlists_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE "public"."wishlists" ADD CONSTRAINT "wishlists_product_id_fkey" FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
+ALTER TABLE ONLY "public"."wishlists" ADD CONSTRAINT "wishlist_user_product_unique" UNIQUE (user_id, product_id);
 
-
--- Table for Notifications
-CREATE TABLE "public"."notifications" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-    "user_id" uuid NOT NULL,
-    "message" text NOT NULL,
-    "link" text,
-    "is_read" boolean NOT NULL DEFAULT false,
-    CONSTRAINT "notifications_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
+CREATE TABLE public.newsletter_subscribers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    email character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
-ALTER TABLE "public"."notifications" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to manage their own notifications" ON "public"."notifications" FOR ALL USING (auth.uid() = user_id);
-
--- Table for Newsletter Subscribers
-CREATE TABLE "public"."newsletter_subscribers" (
-    "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-    "email" text NOT NULL,
-    "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-    CONSTRAINT "newsletter_subscribers_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "newsletter_subscribers_email_key" UNIQUE ("email")
-);
-ALTER TABLE "public"."newsletter_subscribers" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public insert access" ON "public"."newsletter_subscribers" FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow admin full access" ON "public"."newsletter_subscribers" FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+ALTER TABLE "public"."newsletter_subscribers" OWNER TO "postgres";
+ALTER TABLE ONLY "public"."newsletter_subscribers" ADD CONSTRAINT "newsletter_subscribers_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY "public"."newsletter_subscribers" ADD CONSTRAINT "newsletter_subscribers_email_key" UNIQUE (email);
 
 
--- Function for user order stats
+-- Create Functions
 CREATE OR REPLACE FUNCTION public.get_user_order_stats(p_user_id uuid)
-RETURNS TABLE(total_spent numeric, total_orders bigint, pending_orders bigint)
-LANGUAGE sql
-AS $$
-  SELECT
-    COALESCE(SUM(total_amount), 0) as total_spent,
-    COUNT(id) as total_orders,
-    COUNT(id) FILTER (WHERE status = 'pending') as pending_orders
-  FROM public.orders
-  WHERE user_id = p_user_id;
-$$;
-
-
--- Insert sample data
-INSERT INTO "public"."categories" ("name", "image_url", "data_ai_hint") VALUES
-('Fruits', 'https://placehold.co/400x400.png', 'assorted fruits'),
-('Vegetables', 'https://placehold.co/400x400.png', 'fresh vegetables'),
-('Dairy', 'https://placehold.co/400x400.png', 'dairy products'),
-('Bakery', 'https://placehold.co/400x400.png', 'artisan bread'),
-('Meats', 'https://placehold.co/400x400.png', 'fresh meat'),
-('Pantry', 'https://placehold.co/400x400.png', 'pantry staples');
-
-INSERT INTO "public"."products" ("name", "description", "long_description", "price", "image_url", "data_ai_hint", "is_featured", "is_best_seller", "category_id", "created_at") VALUES
-('Organic Avocados', 'Pack of 4 creamy, organic Hass avocados.', 'Our organic Hass avocados are grown in nutrient-rich soil... Perfect for toast, salads, or guacamole.', 4.99, 'https://placehold.co/600x400.png', 'organic avocados', TRUE, TRUE, (SELECT id FROM categories WHERE name = 'Fruits'), '2025-06-24T10:34:35.704392+00:00'),
-('Fresh Strawberries', '1 lb of sweet, juicy strawberries.', 'Hand-picked at peak ripeness, our strawberries are bursting with sweet, natural flavor.', 3.49, 'https://placehold.co/600x400.png', 'fresh strawberries', TRUE, FALSE, (SELECT id FROM categories WHERE name = 'Fruits'), '2025-06-25T10:34:35.704392+00:00'),
-('Free-Range Eggs', 'One dozen large brown free-range eggs.', 'Our hens are free to roam on open pastures, resulting in eggs with rich, flavorful yolks.', 6.29, 'https://placehold.co/600x400.png', 'free-range eggs', FALSE, TRUE, (SELECT id FROM categories WHERE name = 'Dairy'), '2025-06-26T10:34:35.704392+00:00'),
-('Heirloom Tomatoes', 'A mix of colorful and flavorful heirloom tomatoes.', 'Experience the vibrant colors and diverse flavors of our heirloom tomatoes.', 4.79, 'https://placehold.co/600x400.png', 'heirloom tomatoes', TRUE, FALSE, (SELECT id FROM categories WHERE name = 'Vegetables'), '2025-06-27T10:34:35.704392+00:00'),
-('Artisanal Sourdough', 'A freshly baked loaf of artisanal sourdough bread.', 'Baked daily using a traditional starter, our sourdough has a delightful tangy flavor.', 5.99, 'https://placehold.co/600x400.png', 'sourdough bread', TRUE, TRUE, (SELECT id FROM categories WHERE name = 'Bakery'), '2025-06-28T10:34:35.704392+00:00'),
-('Cold-Pressed Olive Oil', '500ml bottle of extra virgin olive oil.', 'Our extra virgin olive oil is cold-pressed from the finest olives to preserve its natural antioxidants.', 12.99, 'https://placehold.co/600x400.png', 'olive oil', FALSE, FALSE, (SELECT id FROM categories WHERE name = 'Pantry'), '2025-06-29T10:34:35.704392+00:00');
-
-
--- Secure function to execute arbitrary SQL, callable only by the service_role.
--- This is used by the admin dashboard to reset the schema.
-CREATE OR REPLACE FUNCTION execute_sql(sql_query text)
-RETURNS void
+RETURNS TABLE(total_spent double precision, total_orders bigint, pending_orders bigint)
 LANGUAGE plpgsql
-SECURITY DEFINER
 AS $$
 BEGIN
-  EXECUTE sql_query;
+    RETURN QUERY
+    SELECT
+        COALESCE(SUM(o.total_amount), 0)::double precision AS total_spent,
+        COUNT(o.id)::bigint AS total_orders,
+        COUNT(CASE WHEN o.status = 'pending' THEN 1 END)::bigint AS pending_orders
+    FROM
+        public.orders o
+    WHERE
+        o.user_id = p_user_id;
 END;
 $$;
+ALTER FUNCTION "public"."get_user_order_stats"(p_user_id uuid) OWNER TO "postgres";
 
-GRANT EXECUTE ON FUNCTION execute_sql(text) TO service_role;
-REVOKE EXECUTE ON FUNCTION execute_sql(text) FROM anon, authenticated;
+-- Seed Data
+INSERT INTO public.categories (name, image_url, data_ai_hint) VALUES
+('Computers', 'https://source.unsplash.com/600x400/?computer,laptop', 'computer laptop'),
+('Smartphones', 'https://source.unsplash.com/600x400/?smartphone,iphone', 'smartphone iphone'),
+('Cameras', 'https://source.unsplash.com/600x400/?camera,photography', 'camera photography'),
+('Headphones', 'https://source.unsplash.com/600x400/?headphones,audio', 'headphones audio'),
+('Gaming', 'https://source.unsplash.com/600x400/?gaming,console', 'gaming console'),
+('Accessories', 'https://source.unsplash.com/600x400/?tech,accessories', 'tech accessories');
+
+DO $$
+DECLARE
+    computers_cat_id uuid;
+    smartphones_cat_id uuid;
+    cameras_cat_id uuid;
+    headphones_cat_id uuid;
+    gaming_cat_id uuid;
+    accessories_cat_id uuid;
+BEGIN
+    SELECT id INTO computers_cat_id FROM public.categories WHERE name = 'Computers';
+    SELECT id INTO smartphones_cat_id FROM public.categories WHERE name = 'Smartphones';
+    SELECT id INTO cameras_cat_id FROM public.categories WHERE name = 'Cameras';
+    SELECT id INTO headphones_cat_id FROM public.categories WHERE name = 'Headphones';
+    SELECT id INTO gaming_cat_id FROM public.categories WHERE name = 'Gaming';
+    SELECT id INTO accessories_cat_id FROM public.categories WHERE name = 'Accessories';
+
+    INSERT INTO public.products (name, description, long_description, price, image_url, data_ai_hint, is_featured, is_best_seller, category_id) VALUES
+    ('Pro Gaming Laptop', '16-inch high-performance gaming laptop.', 'Equipped with the latest processor and a dedicated graphics card, this laptop is built for competitive gaming. Features a 165Hz display and RGB keyboard.', 1499.99, 'https://source.unsplash.com/600x400/?gaming,laptop', 'gaming laptop', true, true, computers_cat_id),
+    ('Ultra-Thin Notebook', 'Sleek and lightweight 13-inch notebook for professionals.', 'With an all-day battery life and a stunning high-resolution display, this notebook is perfect for productivity on the go. Crafted from premium aluminum.', 999.00, 'https://source.unsplash.com/600x400/?ultrabook,notebook', 'ultrabook notebook', true, false, computers_cat_id),
+    ('Flagship Smartphone X', 'The latest smartphone with a pro-grade camera system.', 'Capture breathtaking photos and videos with the advanced triple-camera system. The vibrant 6.7-inch OLED display brings content to life.', 1099.00, 'https://source.unsplash.com/600x400/?smartphone,pro', 'smartphone pro', true, true, smartphones_cat_id),
+    ('Compact Mirrorless Camera', 'A versatile mirrorless camera for enthusiasts.', 'This camera packs a large sensor into a compact body, delivering exceptional image quality. Perfect for travel and everyday photography.', 850.50, 'https://source.unsplash.com/600x400/?mirrorless,camera', 'mirrorless camera', true, false, cameras_cat_id),
+    ('Noise-Cancelling Headphones', 'Immerse yourself in sound with these wireless headphones.', 'Block out distractions and enjoy pure, high-fidelity audio. Features industry-leading noise cancellation and up to 30 hours of battery life.', 349.99, 'https://source.unsplash.com/600x400/?wireless,headphones', 'wireless headphones', true, true, headphones_cat_id),
+    ('Next-Gen Gaming Console', 'Experience the future of gaming.', 'Blazing-fast load times and breathtaking 4K graphics make this the ultimate gaming machine. Comes with one innovative wireless controller.', 499.99, 'https://source.unsplash.com/600x400/?gaming,console,controller', 'gaming console', true, false, gaming_cat_id),
+    ('Mechanical Keyboard', 'RGB mechanical keyboard with tactile switches.', 'Enjoy a superior typing and gaming experience with satisfying tactile feedback and customizable per-key RGB lighting.', 129.99, 'https://source.unsplash.com/600x400/?mechanical,keyboard', 'mechanical keyboard', false, true, accessories_cat_id),
+    ('4K Action Camera', 'Capture all your adventures in stunning 4K.', 'Waterproof, durable, and packed with features like image stabilization and slow-motion recording. Your perfect companion for any adventure.', 399.00, 'https://source.unsplash.com/600x400/?action,camera', 'action camera', false, false, cameras_cat_id),
+    ('Smartwatch Series 8', 'Stay connected and track your health.', 'Monitor your workouts, heart rate, and sleep. Receive notifications and reply to messages right from your wrist.', 429.00, 'https://source.unsplash.com/600x400/?smartwatch,wearable', 'smartwatch wearable', false, true, accessories_cat_id),
+    ('Wireless Charging Pad', 'Fast wireless charging for all your devices.', 'Simply place your compatible smartphone or earbuds on the pad for fast, convenient charging. Sleek, minimalist design.', 49.99, 'https://source.unsplash.com/600x400/?wireless,charger', 'wireless charger', false, false, accessories_cat_id);
+END $$;

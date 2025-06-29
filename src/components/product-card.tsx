@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart } from 'lucide-react';
-
+import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
+import { Badge } from './ui/badge';
 
 interface ProductCardProps {
   product: Product;
@@ -19,14 +19,11 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
-  // Use state to prevent hydration mismatch for random values
   const [reviewsCount, setReviewsCount] = useState(0);
 
   useEffect(() => {
-    // Generate random number only on the client side
     setReviewsCount(Math.floor(Math.random() * (1500 - 100 + 1)) + 100);
   }, []);
-
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -38,53 +35,64 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
-  // Mock rating as it's not in the data model. A real implementation would fetch this.
-  const rating = 4;
+  const rating = 4.5;
+  const discount = Math.floor(Math.random() * 30) + 10; // Random discount between 10-40%
 
   return (
-    <Link href={`/products/${product.id}`} className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
-      <Card className="h-full flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring">
-        <div className="relative aspect-square w-full overflow-hidden">
+    <Card className="h-full flex flex-col overflow-hidden border-none shadow-none bg-transparent">
+      <div className="relative aspect-square w-full overflow-hidden bg-secondary rounded-md group">
+        <Link href={`/products/${product.id}`} className="block h-full w-full">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
             data-ai-hint={product.dataAiHint}
           />
+        </Link>
+        <div className="absolute top-3 left-3">
+            <Badge variant="destructive">-{discount}%</Badge>
         </div>
-
-        <div className="p-4 flex-grow flex flex-col bg-card">
-          <h3 className="font-semibold text-base leading-snug text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
-            {product.name}
-          </h3>
-
-          {reviewsCount > 0 && (
-            <div className="flex items-center gap-1 mt-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-4 h-4 ${i < rating ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`}
-                  aria-hidden="true"
-                />
-              ))}
-              <span className="text-xs text-muted-foreground ml-1">({reviewsCount})</span>
-            </div>
-          )}
-          
-          <div className="mt-2 flex-grow">
-            <span className="text-2xl font-bold text-foreground">${product.price.toFixed(2)}</span>
-          </div>
-          
-          <div className="mt-4">
-            <Button onClick={handleAddToCart} size="sm" className="w-full">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
+        <div className="absolute top-3 right-3 flex flex-col gap-2">
+            <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full">
+                <Heart className="h-4 w-4"/>
             </Button>
-          </div>
+             <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full" asChild>
+                <Link href={`/products/${product.id}`}>
+                    <Eye className="h-4 w-4"/>
+                </Link>
+            </Button>
         </div>
-      </Card>
-    </Link>
+        <Button onClick={handleAddToCart} className="absolute bottom-0 w-full rounded-t-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          Add to Cart
+        </Button>
+      </div>
+
+      <CardContent className="p-0 pt-4 flex-grow flex flex-col">
+        <h3 className="font-medium text-base leading-snug text-foreground line-clamp-2">
+          {product.name}
+        </h3>
+        
+        <div className="mt-2 flex-grow">
+          <span className="text-base font-medium text-primary">${product.price.toFixed(2)}</span>
+          <span className="text-base text-muted-foreground line-through ml-3">${(product.price * (1 + discount / 100)).toFixed(2)}</span>
+        </div>
+        
+        {reviewsCount > 0 && (
+          <div className="flex items-center gap-1 mt-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/40'}`}
+                aria-hidden="true"
+              />
+            ))}
+            <span className="text-xs text-muted-foreground ml-1">({reviewsCount})</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

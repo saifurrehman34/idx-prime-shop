@@ -1,24 +1,24 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Terminal } from 'lucide-react';
-
+import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Smartphone, Headphones } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { CategoryCard } from '@/components/category-card';
-import { NewsletterForm } from '@/components/newsletter-form';
+import { Countdown } from '@/components/countdown';
 import { createClient } from '@/lib/supabase/server';
 import type { Product, Category } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export default async function Home() {
   const supabase = createClient();
   
   const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('name');
-  const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(4);
+  const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(8);
   const { data: bestSellersData, error: bestSellersError } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(4);
-  const { data: newArrivalsData, error: newArrivalsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(4);
+  const { data: allProductsData, error: allProductsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(8);
 
-  const error = categoriesError || featuredError || newArrivalsError || bestSellersError;
+  const error = categoriesError || featuredError || allProductsError || bestSellersError;
   if (error) {
     console.error('Error fetching homepage data:', error);
   }
@@ -26,112 +26,173 @@ export default async function Home() {
   const categories: Category[] = categoriesData || [];
   const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
-  const newArrivals: Product[] = newArrivalsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+  const allProducts: Product[] = allProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
+
+  const fourDaysFromNow = new Date();
+  fourDaysFromNow.setDate(fourDaysFromNow.getDate() + 4);
 
   return (
-    <div className="flex flex-col gap-16 md:gap-24">
-      {/* Hero Section */}
-      <section className="relative w-full h-[60vh] max-h-[500px] -mt-16 md:-mt-24">
-        <div className="container mx-auto h-full flex items-center">
-            <Image
-              src="https://placehold.co/1600x900.png"
-              alt="Fresh produce on a market stall"
-              fill
-              className="object-cover"
-              data-ai-hint="fresh market stall"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-4 w-full">
-              <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg">
-                Experience Freshness, Delivered.
-              </h1>
-              <p className="text-lg md:text-xl max-w-2xl mb-8 drop-shadow">
-                The best organic produce and artisanal goods, right to your doorstep.
-              </p>
-              <Button asChild size="lg" className="text-lg px-8 py-6">
-                <Link href="#featured-products">Shop Now</Link>
-              </Button>
-            </div>
+    <div className="flex flex-col">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row gap-8 pt-8">
+          {/* Left Sidebar */}
+          <aside className="w-full md:w-64">
+            <nav className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+              {categories.map(category => (
+                <Button key={category.id} variant="ghost" className="justify-start shrink-0" asChild>
+                  <Link href="#">{category.name}</Link>
+                </Button>
+              ))}
+            </nav>
+            <Separator className="mt-4 hidden md:block" />
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1">
+            <Carousel className="w-full" opts={{ loop: true }}>
+              <CarouselContent>
+                <CarouselItem>
+                   <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
+                      <div className="flex flex-col gap-4 z-10">
+                        <div className="flex items-center gap-4 text-white">
+                          <Smartphone className="h-8 w-8" />
+                          <p>iPhone 14 Series</p>
+                        </div>
+                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Up to 10% off Voucher</h1>
+                        <Button variant="link" className="p-0 text-white h-auto justify-start">
+                          Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Image src="https://placehold.co/500x300.png" alt="iPhone 14" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="smartphone product" />
+                   </div>
+                </CarouselItem>
+                <CarouselItem>
+                   <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
+                      <div className="flex flex-col gap-4 z-10">
+                        <div className="flex items-center gap-4 text-white">
+                           <Headphones className="h-8 w-8" />
+                           <p>Gaming Headset</p>
+                        </div>
+                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Enhanced Audio Experience</h1>
+                        <Button variant="link" className="p-0 text-white h-auto justify-start">
+                          Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Image src="https://placehold.co/500x300.png" alt="Headset" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="gaming headset" />
+                   </div>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
+          </main>
         </div>
-      </section>
+      </div>
       
-      <div className="container mx-auto px-4 space-y-16 md:space-y-24">
-        {/* Error handling */}
-        {error && (
-           <Alert variant="destructive">
-             <Terminal className="h-4 w-4" />
-             <AlertTitle>Error</AlertTitle>
-             <AlertDescription>
-               Could not fetch homepage data. Please ensure your Supabase project is set up correctly and the database schema is up to date.
-             </AlertDescription>
-           </Alert>
-        )}
+      <div className="container mx-auto px-4 mt-16 md:mt-32 space-y-16 md:space-y-24">
+        {/* Flash Sales Section */}
+        <section id="flash-sales">
+          <div className="flex items-end gap-8 mb-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-5 h-10 bg-primary rounded"></div>
+                <p className="text-primary font-semibold">Today's</p>
+              </div>
+              <h2 className="text-3xl font-bold">Flash Sales</h2>
+            </div>
+            <Countdown targetDate={fourDaysFromNow} />
+          </div>
+           <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-4">
+              {featuredProducts.map((product) => (
+                <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                  <ProductCard product={product} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute -top-14 right-14" />
+            <CarouselNext className="absolute -top-14 right-2" />
+          </Carousel>
+        </section>
+        <Separator />
 
         {/* Categories Section */}
         <section id="categories-section">
-          <h2 className="text-3xl font-bold font-headline text-center mb-10">Shop by Category</h2>
-          {categories.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+           <div className="flex items-center gap-4 mb-6">
+            <div className="w-5 h-10 bg-primary rounded"></div>
+            <p className="text-primary font-semibold">Categories</p>
+          </div>
+          <h2 className="text-3xl font-bold mb-10">Browse By Category</h2>
+          <Carousel opts={{ align: "start", slidesToScroll: "auto" }} className="w-full">
+            <CarouselContent className="-ml-4">
               {categories.map(category => (
-                <CategoryCard key={category.id} category={category} />
+                <CarouselItem key={category.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
+                  <CategoryCard category={category} />
+                </CarouselItem>
               ))}
-            </div>
-          ) : !error && (
-            <p className="text-center text-muted-foreground">No categories found.</p>
-          )}
+            </CarouselContent>
+             <CarouselPrevious className="absolute -top-16 right-14" />
+            <CarouselNext className="absolute -top-16 right-2" />
+          </Carousel>
         </section>
-
-        {/* Featured Products Section */}
-        <section id="featured-products" className="scroll-mt-20">
-          <h2 className="text-3xl font-bold font-headline text-center mb-10">Featured Products</h2>
-          {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {featuredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : !error && (
-            <p className="text-center text-muted-foreground">No featured products found.</p>
-          )}
-        </section>
+        <Separator />
 
         {/* Best Sellers Section */}
         <section id="best-sellers">
-          <h2 className="text-3xl font-bold font-headline text-center mb-10">Best Sellers</h2>
-          {bestSellers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {bestSellers.map(product => (
+           <div className="flex items-center justify-between mb-10">
+            <div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-5 h-10 bg-primary rounded"></div>
+                <p className="text-primary font-semibold">This Month</p>
+              </div>
+              <h2 className="text-3xl font-bold">Best Selling Products</h2>
+            </div>
+            <Button>View All</Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {bestSellers.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+
+        {/* Our Products Section */}
+        <section id="our-products">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-5 h-10 bg-primary rounded"></div>
+            <p className="text-primary font-semibold">Our Products</p>
+          </div>
+          <h2 className="text-3xl font-bold mb-10">Explore Our Products</h2>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {allProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-          ) : !error && (
-            <p className="text-center text-muted-foreground">No best-selling products found.</p>
-          )}
+          <div className="text-center mt-12">
+            <Button>View All Products</Button>
+          </div>
         </section>
         
-        {/* New Arrivals Section */}
-        <section id="new-arrivals">
-          <h2 className="text-3xl font-bold font-headline text-center mb-10">New Arrivals</h2>
-          {newArrivals.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {newArrivals.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+        {/* Features Section */}
+        <section className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-20 text-center">
+            <div className="flex flex-col items-center gap-4">
+                <div className="bg-secondary p-3 rounded-full border-8 border-muted">
+                    <Ship className="h-8 w-8 text-white bg-black rounded-full p-1"/>
+                </div>
+                <h3 className="font-semibold text-xl">FREE AND FAST DELIVERY</h3>
+                <p className="text-sm">Free delivery for all orders over $140</p>
             </div>
-          ) : !error && (
-             <p className="text-center text-muted-foreground">No new arrivals found.</p>
-          )}
-        </section>
-        
-        {/* Newsletter Section */}
-        <section id="newsletter" className="bg-muted/50 rounded-xl p-8 md:p-12">
-            <div className="max-w-2xl mx-auto text-center">
-                <h2 className="text-2xl md:text-3xl font-bold font-headline mb-4">Stay in the Loop</h2>
-                <p className="text-muted-foreground mb-6">
-                    Sign up for our newsletter to get the latest on new products, special offers, and more.
-                </p>
-                <NewsletterForm />
+            <div className="flex flex-col items-center gap-4">
+                <div className="bg-secondary p-3 rounded-full border-8 border-muted">
+                    <Headset className="h-8 w-8 text-white bg-black rounded-full p-1"/>
+                </div>
+                <h3 className="font-semibold text-xl">24/7 CUSTOMER SERVICE</h3>
+                <p className="text-sm">Friendly 24/7 customer support</p>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+                <div className="bg-secondary p-3 rounded-full border-8 border-muted">
+                    <ShieldCheck className="h-8 w-8 text-white bg-black rounded-full p-1"/>
+                </div>
+                <h3 className="font-semibold text-xl">MONEY BACK GUARANTEE</h3>
+                <p className="text-sm">We return money within 30 days</p>
             </div>
         </section>
       </div>
