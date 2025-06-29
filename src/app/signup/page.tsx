@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
 import { signup } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
 function SignupButton() {
   const { pending } = useFormStatus();
@@ -26,11 +28,10 @@ function SignupButton() {
   );
 }
 
-export default function SignupPage({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
+function SignupPageContent() {
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
+  
   return (
     <div className="flex items-center justify-center py-12">
       <Card className="mx-auto max-w-sm">
@@ -56,9 +57,9 @@ export default function SignupPage({
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" name="password" required />
             </div>
-            {searchParams.message && (
+            {message && (
               <p className="p-4 bg-red-100 text-red-800 text-center rounded-md text-sm">
-                {searchParams.message}
+                {message}
               </p>
             )}
             <SignupButton />
@@ -73,4 +74,12 @@ export default function SignupPage({
       </Card>
     </div>
   );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense>
+            <SignupPageContent />
+        </Suspense>
+    )
 }

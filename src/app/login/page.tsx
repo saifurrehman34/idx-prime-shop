@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
 import { login } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
 function LoginButton() {
   const { pending } = useFormStatus();
@@ -26,13 +28,11 @@ function LoginButton() {
   );
 }
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
-  const isSuccessMessage = searchParams.message?.includes('Check your email');
-  const isErrorMessage = !isSuccessMessage && searchParams.message;
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
+  const isSuccessMessage = message?.includes('Check your email');
+  const isErrorMessage = !isSuccessMessage && message;
 
   return (
     <div className="flex items-center justify-center py-12">
@@ -61,12 +61,12 @@ export default function LoginPage({
             </div>
             {isSuccessMessage && (
               <p className="p-4 bg-green-100 text-green-800 text-center rounded-md text-sm">
-                {searchParams.message}
+                {message}
               </p>
             )}
             {isErrorMessage && (
                <p className="p-4 bg-red-100 text-red-800 text-center rounded-md text-sm">
-                {searchParams.message}
+                {message}
               </p>
             )}
             <LoginButton />
@@ -81,4 +81,12 @@ export default function LoginPage({
       </Card>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
+  )
 }
