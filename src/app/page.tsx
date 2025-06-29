@@ -4,7 +4,7 @@ import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones, A
 import { ProductCard } from '@/components/product-card';
 import { Countdown } from '@/components/countdown';
 import { createClient } from '@/lib/supabase/server';
-import type { Product, Category, HeroSlide } from '@/types';
+import type { Product, HeroSlide } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -13,7 +13,6 @@ export default async function Home() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('name');
   const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(8);
   const { data: bestSellersData, error: bestSellersError } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(4);
   const { data: allProductsData, error: allProductsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(8);
@@ -24,12 +23,11 @@ export default async function Home() {
     : { data: [] };
   const wishlistedProductIds = new Set(wishlistData?.map(item => item.product_id) || []);
 
-  const error = categoriesError || featuredError || allProductsError || bestSellersError || heroSlidesError;
+  const error = featuredError || allProductsError || bestSellersError || heroSlidesError;
   if (error) {
     console.error('Error fetching homepage data:', error);
   }
 
-  const categories: Category[] = categoriesData || [];
   const featuredProducts: Product[] = featuredProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const bestSellers: Product[] = bestSellersData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
   const allProducts: Product[] = allProductsData?.map(p => ({ ...p, imageUrl: p.image_url, longDescription: p.long_description, dataAiHint: p.data_ai_hint })) || [];
@@ -40,74 +38,60 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row gap-8 pt-8">
-            <aside className="w-full md:w-64">
-                <nav className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
-                    {categories.map((category) => (
-                        <Button key={category.id} variant="ghost" asChild className="justify-start shrink-0">
-                             <Link href={`/products?category=${encodeURIComponent(category.name)}`}>{category.name}</Link>
-                        </Button>
-                    ))}
-                </nav>
-                <Separator className="mt-4 hidden md:block" />
-            </aside>
-            <main className="flex-1">
-                <Carousel className="w-full" opts={{ loop: true }}>
-                    <CarouselContent>
-                        {heroSlides.length > 0 ? heroSlides.map(slide => (
-                          <CarouselItem key={slide.id}>
-                              <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
-                                 <div className="flex flex-col gap-5 z-10">
-                                     <p className="font-semibold text-sm uppercase tracking-wider">{slide.subtitle}</p>
-                                     <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
-                                         {slide.title}
-                                     </h1>
-                                     <Link href={slide.link || '#'} className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
-                                        Shop Now <ArrowRight className="h-4 w-4" />
-                                     </Link>
-                                 </div>
-                                 <Image
-                                     src={slide.image_url}
-                                     alt={slide.title}
-                                     className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
-                                     width={400}
-                                     height={344}
-                                     data-ai-hint={slide.image_ai_hint || 'product image'}
-                                     priority
-                                 />
-                              </div>
-                          </CarouselItem>
-                        )) : (
-                           <CarouselItem>
-                            <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
-                               <div className="flex flex-col gap-5 z-10">
-                                   <div className="flex items-center gap-4">
-                                       <Apple className="h-8 w-8 text-white"/>
-                                       <p className="font-semibold text-sm uppercase tracking-wider">iPhone 14 Series</p>
-                                   </div>
-                                   <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
-                                       Up to 10% off Voucher
-                                   </h1>
-                                   <Link href="/products" className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
-                                       Shop Now <ArrowRight className="h-4 w-4"/>
-                                   </Link>
-                               </div>
-                               <Image
-                                   src="https://source.unsplash.com/featured/800x600/?iphone"
-                                   alt="iPhone 14"
-                                   className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
-                                   width={400}
-                                   height={344}
-                                   data-ai-hint="smartphone product"
-                               />
-                            </div>
-                        </CarouselItem>
-                        )}
-                    </CarouselContent>
-                </Carousel>
-            </main>
-        </div>
+      <div className="container mx-auto px-4 pt-8">
+        <Carousel className="w-full" opts={{ loop: true }}>
+            <CarouselContent>
+                {heroSlides.length > 0 ? heroSlides.map(slide => (
+                  <CarouselItem key={slide.id}>
+                      <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
+                         <div className="flex flex-col gap-5 z-10">
+                             <p className="font-semibold text-sm uppercase tracking-wider">{slide.subtitle}</p>
+                             <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
+                                 {slide.title}
+                             </h1>
+                             <Link href={slide.link || '#'} className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
+                                Shop Now <ArrowRight className="h-4 w-4" />
+                             </Link>
+                         </div>
+                         <Image
+                             src={slide.image_url}
+                             alt={slide.title}
+                             className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
+                             width={400}
+                             height={344}
+                             data-ai-hint={slide.image_ai_hint || 'product image'}
+                             priority
+                         />
+                      </div>
+                  </CarouselItem>
+                )) : (
+                   <CarouselItem>
+                    <div className="relative h-[200px] md:h-[344px] bg-black text-white rounded-md p-10 md:p-16 flex items-center">
+                       <div className="flex flex-col gap-5 z-10">
+                           <div className="flex items-center gap-4">
+                               <Apple className="h-8 w-8 text-white"/>
+                               <p className="font-semibold text-sm uppercase tracking-wider">iPhone 14 Series</p>
+                           </div>
+                           <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">
+                               Up to 10% off Voucher
+                           </h1>
+                           <Link href="/products" className="inline-flex items-center gap-2 font-medium text-white underline underline-offset-4 transition-opacity hover:opacity-80 w-max">
+                               Shop Now <ArrowRight className="h-4 w-4"/>
+                           </Link>
+                       </div>
+                       <Image
+                           src="https://source.unsplash.com/featured/800x600/?iphone"
+                           alt="iPhone 14"
+                           className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom z-0"
+                           width={400}
+                           height={344}
+                           data-ai-hint="smartphone product"
+                       />
+                    </div>
+                </CarouselItem>
+                )}
+            </CarouselContent>
+        </Carousel>
       </div>
       
       <div className="container mx-auto px-4 mt-16 md:mt-32 space-y-16 md:space-y-24">
