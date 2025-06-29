@@ -86,12 +86,19 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
+               <NavigationMenuItem>
+                <Link href="/products" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Shop
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
                 <NavigationMenuContent>
                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {categories.map((category) => (
-                      <ListItem key={category.id} href="#" title={category.name}>
+                      <ListItem key={category.id} href={`/products?category=${category.name}`} title={category.name}>
                         {/* A short description could go here if available */}
                       </ListItem>
                     ))}

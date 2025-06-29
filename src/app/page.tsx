@@ -53,7 +53,7 @@ export default async function Home() {
                                 From farm to table, we deliver the freshest organic produce and pantry staples right to your doorstep.
                             </p>
                             <Button size="lg" asChild>
-                                <Link href="#">
+                                <Link href="/products">
                                     Shop All Products <ArrowRight className="ml-2"/>
                                 </Link>
                             </Button>
@@ -80,7 +80,7 @@ export default async function Home() {
                                 Check out our weekly specials and enjoy amazing discounts on a wide range of products.
                             </p>
                             <Button size="lg" asChild>
-                                <Link href="#">
+                                <Link href="/products">
                                     View Deals <ArrowRight className="ml-2"/>
                                 </Link>
                             </Button>
@@ -160,7 +160,7 @@ export default async function Home() {
               </div>
               <h2 className="text-3xl font-bold">Best Selling Products</h2>
             </div>
-            <Button>View All</Button>
+            <Button asChild><Link href="/products">View All</Link></Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {bestSellers.map(product => (
@@ -182,7 +182,7 @@ export default async function Home() {
               ))}
             </div>
           <div className="text-center mt-12">
-            <Button>View All Products</Button>
+            <Button asChild><Link href="/products">View All Products</Link></Button>
           </div>
         </section>
         
