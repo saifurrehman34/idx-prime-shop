@@ -56,14 +56,14 @@ export default async function Home() {
                       <div className="flex flex-col gap-4 z-10">
                         <div className="flex items-center gap-4 text-white">
                           <Smartphone className="h-8 w-8" />
-                          <p>iPhone 14 Series</p>
+                          <p>Latest Tech Collection</p>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Up to 10% off Voucher</h1>
+                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Explore the Future of Tech</h1>
                         <Button variant="link" className="p-0 text-white h-auto justify-start">
                           Shop Now <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
-                      <Image src="https://source.unsplash.com/random/800x600/?smartphone,product" alt="iPhone 14" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="smartphone product" />
+                      <Image src="https://source.unsplash.com/random/800x600/?tech collection" alt="Tech Collection" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="tech collection" />
                    </div>
                 </CarouselItem>
                 <CarouselItem>
@@ -71,14 +71,14 @@ export default async function Home() {
                       <div className="flex flex-col gap-4 z-10">
                         <div className="flex items-center gap-4 text-white">
                            <Headphones className="h-8 w-8" />
-                           <p>Gaming Headset</p>
+                           <p>Premium Sound Gear</p>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Enhanced Audio Experience</h1>
+                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Unleash Premium Sound</h1>
                         <Button variant="link" className="p-0 text-white h-auto justify-start">
                           Shop Now <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
-                      <Image src="https://source.unsplash.com/random/800x600/?headset,product" alt="Headset" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="gaming headset" />
+                      <Image src="https://source.unsplash.com/random/800x600/?premium headphones" alt="Premium Sound" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="premium audio" />
                    </div>
                 </CarouselItem>
               </CarouselContent>
