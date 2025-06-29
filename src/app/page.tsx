@@ -49,7 +49,7 @@ export default async function Home() {
               <p className="text-lg md:text-xl max-w-2xl mb-8 drop-shadow">
                 The best organic produce and artisanal goods, right to your doorstep.
               </p>
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6">
+              <Button asChild size="lg" className="text-lg px-8 py-6">
                 <Link href="#featured-products">Shop Now</Link>
               </Button>
             </div>

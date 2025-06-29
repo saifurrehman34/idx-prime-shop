@@ -61,7 +61,7 @@ export function Cart() {
               <p>Total</p>
               <p>${cartTotal.toFixed(2)}</p>
             </div>
-            <Button className="w-full mt-4 bg-accent hover:bg-accent/90 text-accent-foreground">Checkout</Button>
+            <Button className="w-full mt-4">Checkout</Button>
           </div>
         </>
       ) : (

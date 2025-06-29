@@ -56,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="p-4 flex-grow flex flex-col bg-card">
-          <h3 className="font-semibold text-base leading-snug text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-semibold text-base leading-snug text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
             {product.name}
           </h3>
 
@@ -65,7 +65,7 @@ export function ProductCard({ product }: ProductCardProps) {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/40'}`}
+                  className={`w-4 h-4 ${i < rating ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`}
                   aria-hidden="true"
                 />
               ))}
@@ -78,7 +78,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           
           <div className="mt-4">
-            <Button onClick={handleAddToCart} size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button onClick={handleAddToCart} size="sm" className="w-full">
               <ShoppingCart className="mr-2 h-4 w-4" />
               Add to Cart
             </Button>

@@ -44,7 +44,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             <Separator className="my-4" />
             <p className="mb-6">{product.longDescription}</p>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-auto gap-4">
-              <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-foreground">${product.price.toFixed(2)}</span>
               <AddToCartButton product={product} />
             </div>
           </div>

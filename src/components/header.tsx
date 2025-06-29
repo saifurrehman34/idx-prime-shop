@@ -42,11 +42,11 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
   const { cartCount } = useCart();
 
   return (
-    <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40">
+    <header className="bg-header text-header-foreground border-b border-header/80 sticky top-0 z-40">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Left Side: Logo and Desktop Nav */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-header-foreground">
             <Leaf className="h-6 w-6" />
             <span className="font-headline">Verdant Market</span>
           </Link>
@@ -54,7 +54,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Shop</NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-white/10 focus:bg-white/10">Shop</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                       {categories.map((category) => (
@@ -66,11 +66,11 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuLink asChild>
-                    <Link href="#new-arrivals" className={navigationMenuTriggerStyle()}>
+                  <Link href="#new-arrivals" legacyBehavior passHref>
+                    <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "bg-transparent hover:bg-white/10 focus:bg-white/10")}>
                       New Arrivals
-                    </Link>
-                  </NavigationMenuLink>
+                    </NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
@@ -80,7 +80,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
         {/* Right Side: Icons and Mobile Menu */}
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-white/20 hover:text-header-foreground">
               <Search className="h-5 w-5" />
               <span className="sr-only">Search</span>
             </Button>
@@ -88,7 +88,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/20">
                     <Avatar className="h-8 w-8">
                        <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || user.email} />
                        <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
@@ -122,7 +122,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="text-header-foreground hover:bg-white/20 hover:text-header-foreground">
                     <Link href="/login">
                         Login
                     </Link>
@@ -132,7 +132,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
           
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative text-header-foreground hover:bg-white/20 hover:text-header-foreground">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
@@ -154,7 +154,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-white/20 hover:text-header-foreground">
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Open Menu</span>
                 </Button>

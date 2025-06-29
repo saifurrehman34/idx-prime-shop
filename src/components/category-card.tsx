@@ -18,7 +18,7 @@ export function CategoryCard({ category }: { category: Category }) {
           />
         </div>
         <div className="p-2">
-          <p className="text-sm font-semibold truncate group-hover:text-primary">{category.name}</p>
+          <p className="text-sm font-semibold truncate group-hover:text-accent">{category.name}</p>
         </div>
       </Card>
     </Link>
