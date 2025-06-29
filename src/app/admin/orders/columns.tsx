@@ -3,6 +3,12 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { format } from 'date-fns'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { updateOrderStatus } from './actions';
+import type { Database } from "@/types/database.types";
 
 export type Order = {
   id: string
@@ -13,6 +19,45 @@ export type Order = {
     full_name: string | null
     email: string | null
   } | null
+}
+
+const OrderActions = ({ order }: { order: Order }) => {
+    const { toast } = useToast();
+    const statuses: Database['public']['Enums']['order_status'][] = ['pending', 'shipped', 'delivered', 'cancelled'];
+
+    const handleStatusChange = async (status: Database['public']['Enums']['order_status']) => {
+        const result = await updateOrderStatus(order.id, status);
+        if (result.success) {
+            toast({ title: "Success", description: result.message });
+        } else {
+            toast({ variant: 'destructive', title: "Error", description: result.message });
+        }
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {statuses.map((status) => (
+                    <DropdownMenuItem 
+                        key={status} 
+                        onSelect={() => handleStatusChange(status)}
+                        disabled={order.status === status}
+                        className="capitalize"
+                    >
+                        {status}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
 }
 
 export const columns: ColumnDef<Order>[] = [
@@ -56,5 +101,9 @@ export const columns: ColumnDef<Order>[] = [
  
       return <div className="text-right font-medium">{formatted}</div>
     },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <OrderActions order={row.original} />,
   },
 ]
