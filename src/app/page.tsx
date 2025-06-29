@@ -49,44 +49,36 @@ export default async function Home() {
 
           {/* Main Content */}
           <main className="flex-1">
-            <Carousel className="w-full" opts={{ loop: true }}>
-              <CarouselContent>
-                <CarouselItem>
-                   <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
-                      <div className="flex flex-col gap-4 z-10">
-                        <div className="flex items-center gap-4 text-white">
-                          <Smartphone className="h-8 w-8" />
-                          <p>iPhone 14 Series</p>
+            <div className="bg-secondary rounded-lg overflow-hidden">
+                <div className="grid md:grid-cols-2 items-center">
+                    <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                        <div className="flex items-center gap-4 text-primary">
+                            <Headphones className="h-8 w-8" />
+                            <p className="font-semibold">The Future of Sound</p>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Up to 10% off Voucher</h1>
-                        <Button variant="link" className="p-0 text-white h-auto justify-start" asChild>
-                          <Link href="#">
-                            Shop Now <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mt-4 leading-tight tracking-tighter">
+                            Upgrade Your Audio Experience
+                        </h1>
+                        <p className="mt-4 text-lg text-muted-foreground">
+                            Discover our new collection of wireless headphones. Up to 40% off this summer.
+                        </p>
+                        <Button size="lg" className="mt-8 self-start" asChild>
+                           <Link href="#">
+                             Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+                           </Link>
                         </Button>
-                      </div>
-                      <Image src="https://source.unsplash.com/featured/800x600/?iphone" alt="iPhone 14" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="smartphone product" />
-                   </div>
-                </CarouselItem>
-                <CarouselItem>
-                   <div className="relative h-[200px] md:h-[344px] bg-black text-white p-8 md:p-12 flex items-center">
-                      <div className="flex flex-col gap-4 z-10">
-                        <div className="flex items-center gap-4 text-white">
-                           <Headphones className="h-8 w-8" />
-                           <p>Gaming Headset</p>
-                        </div>
-                        <h1 className="text-3xl md:text-5xl font-semibold max-w-sm leading-tight">Enhanced Audio Experience</h1>
-                         <Button variant="link" className="p-0 text-white h-auto justify-start" asChild>
-                          <Link href="#">
-                            Shop Now <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                      <Image src="https://source.unsplash.com/featured/800x600/?gaming,headset" alt="Headset" className="absolute right-0 bottom-0 h-full w-auto object-contain z-0" width={500} height={300} data-ai-hint="gaming headset" />
-                   </div>
-                </CarouselItem>
-              </CarouselContent>
-            </Carousel>
+                    </div>
+                    <div className="relative h-64 md:h-[450px]">
+                        <Image 
+                          src="https://source.unsplash.com/featured/800x600/?headphones,minimalist"
+                          alt="Modern headphones"
+                          fill
+                          className="object-cover"
+                          data-ai-hint="modern headphones"
+                        />
+                    </div>
+                </div>
+            </div>
           </main>
         </div>
       </div>
