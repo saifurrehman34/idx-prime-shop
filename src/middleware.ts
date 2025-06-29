@@ -1,56 +1,59 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
-
-import type { NextRequest } from 'next/server'
-import type { Database } from '@/types/database.types'
+import { NextResponse, type NextRequest } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  const { pathname } = request.nextUrl;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Create a Supabase client and refresh the session
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase URL or Anon Key in middleware.')
-    return response
+  const publicRoutes = ['/login', '/signup', '/products'];
+  // The root path '/' and any path starting with /products are public
+  const isPublicPath = pathname === '/' || publicRoutes.some(p => pathname.startsWith(p));
+
+  const authRoutes = ['/login', '/signup'];
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isUserRoute = pathname.startsWith('/user');
+
+  // If the user is not logged in and is trying to access a protected route, redirect to login
+  if (!user && !isPublicPath) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+  
+  // If the user is logged in
+  if (user) {
+    // Fetch user role from the user_profiles table
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // If there's an error fetching the profile or no profile exists, sign out and redirect
+    if (error || !profile) {
+      await supabase.auth.signOut();
+      return NextResponse.redirect(new URL('/login?message=Could not find user profile.', request.url));
+    }
+    
+    const userRole = profile.role;
+
+    // If on an auth route (/login, /signup), redirect to the appropriate dashboard
+    if (authRoutes.includes(pathname)) {
+      if (userRole === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      return NextResponse.redirect(new URL('/user/home', request.url));
+    }
+    
+    // If a non-admin tries to access an admin route, redirect them
+    if (isAdminRoute && userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/user/home', request.url));
+    }
   }
 
-  const supabase = createServerClient<Database>(
-    supabaseUrl,
-    supabaseKey,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is set, update the request and response cookies
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the request and response cookies
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
-          response.cookies.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
-
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getUser()
-
-  return response
+  // Allow the request to continue
+  return NextResponse.next();
 }
 
 export const config = {
@@ -64,4 +67,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
-}
+};

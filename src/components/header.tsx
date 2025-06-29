@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Leaf, ShoppingCart, Heart, Search, User, Menu } from 'lucide-react';
+import { Leaf, ShoppingCart, Heart, Search, User as UserIcon, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -25,9 +25,15 @@ import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
 import type { Category } from '@/types';
 import { cn } from '@/lib/utils';
+import type { User } from '@supabase/supabase-js';
+import { logout } from '@/app/auth/actions';
 
-export function Header({ categories }: { categories: Category[] }) {
+export function Header({ categories, user }: { categories: Category[]; user: User | null }) {
   const { cartCount } = useCart();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40">
@@ -72,14 +78,27 @@ export function Header({ categories }: { categories: Category[] }) {
               <Search className="h-5 w-5" />
               <span className="sr-only">Search</span>
             </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Login</span>
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-              <span className="sr-only">Wishlist</span>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="icon">
+                  <Heart className="h-5 w-5" />
+                  <span className="sr-only">Wishlist</span>
+                </Button>
+                <form action={handleLogout}>
+                    <Button variant="ghost" size="icon" type="submit">
+                        <LogOut className="h-5 w-5" />
+                        <span className="sr-only">Logout</span>
+                    </Button>
+                </form>
+              </>
+            ) : (
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href="/login">
+                        <UserIcon className="h-5 w-5" />
+                        <span className="sr-only">Login</span>
+                    </Link>
+                </Button>
+            )}
           </div>
           
           <Sheet>
@@ -128,21 +147,21 @@ export function Header({ categories }: { categories: Category[] }) {
                     <Link href="#new-arrivals" className="text-lg font-medium hover:text-primary">New Arrivals</Link>
                   </SheetClose>
                   <hr className="my-4"/>
-                   <SheetClose asChild>
-                     <Link href="#" className="flex items-center gap-2 text-lg font-medium hover:text-primary">
-                        <Search className="h-5 w-5" /> Search
-                     </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                     <Link href="#" className="flex items-center gap-2 text-lg font-medium hover:text-primary">
-                        <User className="h-5 w-5" /> Login
-                     </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                     <Link href="#" className="flex items-center gap-2 text-lg font-medium hover:text-primary">
-                        <Heart className="h-5 w-5" /> Wishlist
-                     </Link>
-                  </SheetClose>
+                   {user ? (
+                     <form action={handleLogout}>
+                       <Button variant="ghost" type="submit" className="w-full justify-start gap-2 text-lg font-medium hover:text-primary">
+                          <LogOut className="h-5 w-5" /> Logout
+                       </Button>
+                     </form>
+                   ) : (
+                    <>
+                      <SheetClose asChild>
+                         <Link href="/login" className="flex items-center gap-2 text-lg font-medium hover:text-primary">
+                            <UserIcon className="h-5 w-5" /> Login
+                         </Link>
+                      </SheetClose>
+                    </>
+                   )}
                 </div>
               </SheetContent>
             </Sheet>

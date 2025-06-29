@@ -12,3 +12,5 @@ export interface CartItem {
 }
 
 export type Category = Tables<'categories'>;
+
+export type UserProfile = Tables<'user_profiles'>;

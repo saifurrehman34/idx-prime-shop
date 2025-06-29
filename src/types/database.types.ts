@@ -130,6 +130,7 @@ export type Database = {
           long_description: string
           data_ai_hint: string
           is_featured: boolean
+          is_best_seller: boolean
           created_at: string
           category_id: string | null
         }
@@ -142,6 +143,7 @@ export type Database = {
           long_description: string
           data_ai_hint: string
           is_featured?: boolean
+          is_best_seller?: boolean
           created_at?: string
           category_id?: string | null
         }
@@ -154,6 +156,7 @@ export type Database = {
           long_description?: string
           data_ai_hint?: string
           is_featured?: boolean
+          is_best_seller?: boolean
           created_at?: string
           category_id?: string | null
         }
@@ -192,6 +195,34 @@ export type Database = {
           created_at?: string
         }
         Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          avatar_url: string | null
+          role: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          avatar_url?: string | null
+          role?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
