@@ -16,6 +16,8 @@ export default function LoginPage({
 }: {
   searchParams: { message: string };
 }) {
+  const isSuccessMessage = searchParams.message?.includes('Check your email');
+
   return (
     <div className="flex items-center justify-center py-12">
       <Card className="mx-auto max-w-sm">
@@ -42,7 +44,7 @@ export default function LoginPage({
               <Input id="password" type="password" name="password" required />
             </div>
             {searchParams.message && (
-              <p className="p-4 bg-foreground/10 text-foreground text-center rounded-md">
+              <p className={`p-4 bg-foreground/10 text-center rounded-md ${isSuccessMessage ? 'text-primary' : 'text-destructive'}`}>
                 {searchParams.message}
               </p>
             )}

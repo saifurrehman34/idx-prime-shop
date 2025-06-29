@@ -31,10 +31,6 @@ import { logout } from '@/app/auth/actions';
 export function Header({ categories, user }: { categories: Category[]; user: User | null }) {
   const { cartCount } = useCart();
 
-  const handleLogout = async () => {
-    await logout();
-  };
-
   return (
     <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -84,7 +80,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   <Heart className="h-5 w-5" />
                   <span className="sr-only">Wishlist</span>
                 </Button>
-                <form action={handleLogout}>
+                <form action={logout}>
                     <Button variant="ghost" size="icon" type="submit">
                         <LogOut className="h-5 w-5" />
                         <span className="sr-only">Logout</span>
@@ -148,7 +144,7 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                   </SheetClose>
                   <hr className="my-4"/>
                    {user ? (
-                     <form action={handleLogout}>
+                     <form action={logout}>
                        <Button variant="ghost" type="submit" className="w-full justify-start gap-2 text-lg font-medium hover:text-primary">
                           <LogOut className="h-5 w-5" /> Logout
                        </Button>
