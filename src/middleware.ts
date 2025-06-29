@@ -2,7 +2,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
+  // This `response` object will be passed to the Supabase client.
+  // It will be mutated by the client to set and remove cookies.
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -12,7 +14,7 @@ export async function middleware(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase URL or Anon Key')
+    console.error('Missing Supabase URL or Anon Key in middleware.')
     return response;
   }
 
@@ -25,28 +27,22 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
+          // The `set` method is called by the Supabase client to set a cookie.
+          // We are modifying the `response` object returned by this middleware.
           response.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
+          // The `remove` method is called by the Supabase client to remove a cookie.
+          // We are modifying the `response` object returned by this middleware.
           response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
 
+  // This will refresh the session cookie and update it in the `response` object if it's about to expire.
   const { data: { user } } = await supabase.auth.getUser()
+
   const { pathname } = request.nextUrl
   
   const isAdminRoute = pathname.startsWith('/admin')
@@ -54,7 +50,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = isAdminRoute || isUserDashboardRoute
   const isAuthRoute = pathname === '/login' || pathname === '/signup'
 
-  // If user is not logged in and tries to access a protected route
+  // If user is not logged in and tries to access a protected route, redirect to login
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
