@@ -61,7 +61,11 @@ export function Cart() {
               <p>Total</p>
               <p>${cartTotal.toFixed(2)}</p>
             </div>
-            <Button className="w-full mt-4">Checkout</Button>
+            <SheetClose asChild>
+                <Button asChild className="w-full mt-4">
+                    <Link href="/user/checkout">Checkout</Link>
+                </Button>
+            </SheetClose>
           </div>
         </>
       ) : (

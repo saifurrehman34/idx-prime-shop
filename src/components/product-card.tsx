@@ -10,12 +10,14 @@ import type { Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { Badge } from './ui/badge';
+import { toggleWishlist } from '@/app/user/wishlist/actions';
 
 interface ProductCardProps {
   product: Product;
+  isFavorited: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, isFavorited }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
@@ -36,6 +38,17 @@ export function ProductCard({ product }: ProductCardProps) {
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
     });
+  };
+
+  const handleFavoriteToggle = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const result = await toggleWishlist(product.id);
+    if (result.success) {
+      toast({ title: result.message });
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" });
+    }
   };
 
   const rating = 4.5;
@@ -59,8 +72,9 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
         )}
         <div className="absolute top-3 right-3 flex flex-col gap-2">
-            <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full">
-                <Heart className="h-4 w-4"/>
+            <Button onClick={handleFavoriteToggle} variant="secondary" size="icon" className="h-8 w-8 rounded-full">
+                <Heart className={`h-4 w-4 transition-colors ${isFavorited ? 'fill-destructive text-destructive' : ''}`}/>
+                <span className="sr-only">Toggle Wishlist</span>
             </Button>
              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full" asChild>
                 <Link href={`/products/${product.id}`}>

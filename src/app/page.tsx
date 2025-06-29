@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Smartphone, Headphones } from 'lucide-react';
+import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { CategoryCard } from '@/components/category-card';
 import { Countdown } from '@/components/countdown';
@@ -12,11 +12,17 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 export default async function Home() {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   
   const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('name');
   const { data: featuredProductsData, error: featuredError } = await supabase.from('products').select('*').eq('is_featured', true).limit(8);
   const { data: bestSellersData, error: bestSellersError } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(4);
   const { data: allProductsData, error: allProductsError } = await supabase.from('products').select('*').order('created_at', { ascending: false }).limit(8);
+
+  const { data: wishlistData } = user
+    ? await supabase.from('wishlists').select('product_id').eq('user_id', user.id)
+    : { data: [] };
+  const wishlistedProductIds = new Set(wishlistData?.map(item => item.product_id) || []);
 
   const error = categoriesError || featuredError || allProductsError || bestSellersError;
   if (error) {
@@ -33,53 +39,31 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row gap-8 pt-8">
-          {/* Left Sidebar */}
-          <aside className="w-full md:w-64">
-            <nav className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
-              {categories.map(category => (
-                <Button key={category.id} variant="ghost" className="justify-start shrink-0" asChild>
-                  <Link href="#">{category.name}</Link>
+      <div className="container mx-auto px-4 pt-8">
+        <div className="bg-primary/10 rounded-lg p-8 md:p-12 lg:p-16 grid md:grid-cols-2 items-center gap-8">
+            <div className="flex flex-col items-start text-left">
+                <p className="font-semibold text-primary mb-2">Discover Freshness</p>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-4">
+                    The Best Organic Products, Online
+                </h1>
+                <p className="text-lg text-muted-foreground mb-8 max-w-md">
+                    From farm to table, we deliver the freshest organic produce and pantry staples right to your doorstep.
+                </p>
+                <Button size="lg" asChild>
+                    <Link href="#">
+                        Shop All Products <ArrowRight className="ml-2"/>
+                    </Link>
                 </Button>
-              ))}
-            </nav>
-            <Separator className="mt-4 hidden md:block" />
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1">
-            <div className="bg-secondary rounded-lg overflow-hidden">
-                <div className="grid md:grid-cols-2 items-center">
-                    <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-                        <div className="flex items-center gap-4 text-primary">
-                            <Headphones className="h-8 w-8" />
-                            <p className="font-semibold">The Future of Sound</p>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mt-4 leading-tight tracking-tighter">
-                            Upgrade Your Audio Experience
-                        </h1>
-                        <p className="mt-4 text-lg text-muted-foreground">
-                            Discover our new collection of wireless headphones. Up to 40% off this summer.
-                        </p>
-                        <Button size="lg" className="mt-8 self-start" asChild>
-                           <Link href="#">
-                             Shop Now <ArrowRight className="ml-2 h-4 w-4" />
-                           </Link>
-                        </Button>
-                    </div>
-                    <div className="relative h-64 md:h-[450px]">
-                        <Image 
-                          src="https://source.unsplash.com/featured/800x600/?headphones,minimalist"
-                          alt="Modern headphones"
-                          fill
-                          className="object-cover"
-                          data-ai-hint="modern headphones"
-                        />
-                    </div>
-                </div>
             </div>
-          </main>
+            <div className="relative h-64 md:h-full w-full rounded-lg overflow-hidden">
+                <Image
+                    src="https://source.unsplash.com/featured/800x600/?grocery,organic"
+                    alt="Fresh organic vegetables"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="fresh vegetables"
+                />
+            </div>
         </div>
       </div>
       
@@ -100,7 +84,7 @@ export default async function Home() {
             <CarouselContent className="-ml-4">
               {featuredProducts.map((product) => (
                 <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
-                  <ProductCard product={product} />
+                  <ProductCard product={product} isFavorited={wishlistedProductIds.has(product.id)} />
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -145,7 +129,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {bestSellers.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} isFavorited={wishlistedProductIds.has(product.id)} />
             ))}
           </div>
         </section>
@@ -159,7 +143,7 @@ export default async function Home() {
           <h2 className="text-3xl font-bold mb-10">Explore Our Products</h2>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {allProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} isFavorited={wishlistedProductIds.has(product.id)} />
               ))}
             </div>
           <div className="text-center mt-12">

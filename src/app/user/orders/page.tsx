@@ -20,10 +20,7 @@ export default async function MyOrdersPage() {
         .select(`
             *,
             order_items (
-                *,
-                products (
-                    name
-                )
+                id
             )
         `)
         .eq('user_id', user.id)
@@ -65,7 +62,7 @@ export default async function MyOrdersPage() {
                                     <TableCell className="text-right">${order.total_amount.toFixed(2)}</TableCell>
                                     <TableCell className="text-right">
                                         <Button asChild variant="outline" size="sm">
-                                            <Link href="#">View Details</Link>
+                                            <Link href={`/user/orders/${order.id}`}>View Details</Link>
                                         </Button>
                                     </TableCell>
                                 </TableRow>
