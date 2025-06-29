@@ -130,6 +130,7 @@ export type Database = {
           long_description: string
           data_ai_hint: string
           is_featured: boolean
+          is_best_seller: boolean
           created_at: string
           category_id: string | null
         }
@@ -142,6 +143,7 @@ export type Database = {
           long_description: string
           data_ai_hint: string
           is_featured?: boolean
+          is_best_seller?: boolean
           created_at?: string
           category_id?: string | null
         }
@@ -154,6 +156,7 @@ export type Database = {
           long_description?: string
           data_ai_hint?: string
           is_featured?: boolean
+          is_best_seller?: boolean
           created_at?: string
           category_id?: string | null
         }
