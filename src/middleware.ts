@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
-    // This should not happen if the environment variables are set up correctly.
     console.error('Missing Supabase URL or Anon Key')
     return response;
   }
@@ -47,70 +46,53 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired - required for Server Components
+  // This is the crucial part that refreshes the session.
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl;
-
-  const publicRoutes = ['/products'];
-  const authRoutes = ['/login', '/signup'];
-  const isPublicRoute = publicRoutes.some(p => pathname.startsWith(p));
+  const { pathname } = request.nextUrl
+  const authRoutes = ['/login', '/signup']
   const isAuthRoute = authRoutes.includes(pathname);
-  const isAdminRoute = pathname.startsWith('/admin');
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isUserDashboardRoute = pathname.startsWith('/user')
+  const isProtectedRoute = isAdminRoute || isUserDashboardRoute;
 
-  // If the user is not logged in, they can only access the homepage, auth routes, and public routes.
-  if (!user) {
-    if (pathname === '/' || isAuthRoute || isPublicRoute) {
-      return response; // Allow access
-    }
-    // For any other route, redirect to login.
-    return NextResponse.redirect(new URL('/login', request.url));
+  // If user is not logged in and tries to access a protected route, redirect to login.
+  if (!user && isProtectedRoute) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
-  
-  // If the user is logged in
+
+  // If user is logged in
   if (user) {
-    // Fetch user role from the user_profiles table
-    const { data: profile, error } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    // If there's an issue fetching the profile, log them out and send to login with an error.
-    // This is a safeguard against incomplete signups or database issues.
-    if (error || !profile) {
-      await supabase.auth.signOut();
-      const redirectUrl = new URL('/login', request.url);
-      redirectUrl.searchParams.set('message', 'Could not find user profile. Please try logging in again.');
-      return NextResponse.redirect(redirectUrl);
-    }
-    
-    const userRole = profile.role;
-
-    // If a logged-in user tries to access an auth route (/login, /signup), redirect them to their dashboard.
+    // If a logged-in user tries to access /login or /signup, redirect them to their home page.
     if (isAuthRoute) {
-        if (userRole === 'admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-        }
-        return NextResponse.redirect(new URL('/user/home', request.url));
-    }
-    
-    // If a logged-in user is on the homepage, redirect them to their dashboard.
-    if (pathname === '/') {
-       if (userRole === 'admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-        }
-        return NextResponse.redirect(new URL('/user/home', request.url));
-    }
-
-    // If a non-admin tries to access an admin route, redirect them away.
-    if (isAdminRoute && userRole !== 'admin') {
+      // We first need to check their role to redirect to the correct dashboard
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile?.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
       return NextResponse.redirect(new URL('/user/home', request.url));
     }
+    
+    // If a non-admin user tries to access an admin route, redirect them.
+    if (isAdminRoute) {
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/user/home', request.url))
+        }
+    }
   }
 
-  // Allow the request to continue
-  return response;
+  return response
 }
 
 export const config = {
