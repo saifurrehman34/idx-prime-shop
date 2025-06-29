@@ -5,9 +5,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Home, LineChart, Package, ShoppingCart, Users, LogOut, GalleryHorizontalEnd } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Home, Package, ShoppingCart, Users, LogOut, GalleryHorizontalEnd, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
@@ -20,6 +18,7 @@ const navItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: Home },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/categories", label: "Categories", icon: LayoutGrid },
     { href: "/admin/users", label: "Customers", icon: Users },
     { href: "/admin/hero", label: "Hero Slides", icon: GalleryHorizontalEnd },
 ];
