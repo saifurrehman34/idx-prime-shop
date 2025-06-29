@@ -1,7 +1,7 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { addProduct, updateProduct } from '@/app/admin/products/actions';
 import type { Category, Product } from '@/types';
@@ -38,7 +38,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
 
   const action = isEditing ? updateProduct.bind(null, product.id) : addProduct;
 
-  const [state, formAction] = useActionState(action, {
+  const [state, formAction] = useFormState(action, {
     message: '',
     success: false,
     errors: {},

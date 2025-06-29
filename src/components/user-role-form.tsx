@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { updateUserRole } from '@/app/admin/users/actions';
 import { Button } from './ui/button';
@@ -31,7 +30,7 @@ function SubmitButton() {
 export function UserRoleForm({ user }: UserRoleFormProps) {
   const router = useRouter();
   const action = updateUserRole.bind(null, user.id);
-  const [state, formAction] = useActionState(action, { message: '', success: false });
+  const [state, formAction] = useFormState(action, { message: '', success: false });
 
   return (
     <form action={formAction} className="space-y-6">

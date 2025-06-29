@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { executeSql } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +24,7 @@ function ExecuteSqlButton() {
 }
 
 export function AdminSqlForm() {
-  const [state, formAction] = useActionState(executeSql, {
+  const [state, formAction] = useFormState(executeSql, {
     message: '',
     success: false,
   });
