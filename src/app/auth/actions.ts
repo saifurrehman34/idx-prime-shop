@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -9,6 +10,7 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string;
   const supabase = createClient();
 
+  // Step 1: Sign in
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -18,6 +20,8 @@ export async function login(formData: FormData) {
     let message = 'Could not authenticate user.';
     if (signInError.message.includes('Invalid login credentials')) {
         message = 'Invalid email or password. Please try again.';
+    } else if (signInError.message.includes('Email not confirmed')) {
+        message = 'Please check your email to confirm your account before logging in.';
     }
     return redirect(`/login?message=${encodeURIComponent(message)}`);
   }
@@ -27,39 +31,40 @@ export async function login(formData: FormData) {
     return redirect(`/login?message=${encodeURIComponent('Could not authenticate user. No user data found.')}`);
   }
 
-  // After successful login, get user profile to determine role
+  // Step 2: Get user profile, or create it if it's missing.
   let { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
-  // If profile doesn't exist, create it. This handles users who signed up before profile creation was automated.
-  if (profileError && profileError.code === 'PGRST116') { // "PGRST116": "single() did not return a row"
+  if (profileError && profileError.code === 'PGRST116') {
+    // Profile doesn't exist, create it.
     const { data: newProfile, error: insertError } = await supabase
       .from('user_profiles')
-      .insert({ id: user.id, role: 'user' })
+      .insert({ id: user.id, role: 'user' }) // Default role is 'user'
       .select('role')
       .single();
     
     if (insertError) {
+      // If profile creation fails, we can't proceed.
       await supabase.auth.signOut();
-      return redirect(`/login?message=${encodeURIComponent(`Could not create user profile: ${insertError.message}`)}`);
+      return redirect(`/login?message=${encodeURIComponent(`A critical error occurred: Could not create user profile.`)}`);
     }
     profile = newProfile;
   } else if (profileError) {
-    // For any other profile-related error, it's a problem.
+    // Any other profile error is also critical.
     await supabase.auth.signOut();
-    return redirect(`/login?message=${encodeURIComponent(`Could not retrieve user profile: ${profileError.message}`)}`);
+    return redirect(`/login?message=${encodeURIComponent(`A critical error occurred: Could not retrieve user profile.`)}`);
   }
 
   if (!profile) {
-     await supabase.auth.signOut();
-     return redirect(`/login?message=${encodeURIComponent('Could not retrieve or create user profile.')}`);
+    // This should theoretically not be reached, but it's a good safeguard.
+    await supabase.auth.signOut();
+    return redirect(`/login?message=${encodeURIComponent('Could not retrieve or create user profile.')}`);
   }
 
-
-  // Redirect based on role
+  // Step 3: Redirect based on role
   if (profile.role === 'admin') {
     return redirect('/admin/dashboard');
   }
