@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { UserDashboardSidebar } from "@/components/user-dashboard-sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function UserDashboardLayout({ children }: { children: ReactNode }) {
     const supabase = createClient();
@@ -21,21 +23,26 @@ export default async function UserDashboardLayout({ children }: { children: Reac
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:gap-8">
-                <aside className="w-full md:w-64 lg:w-72 flex-shrink-0 mb-8 md:mb-0">
-                    <div className="md:sticky md:top-28">
-                        <UserDashboardSidebar 
-                            userName={profile?.full_name || 'User'} 
-                            userEmail={user.email || ''} 
-                            avatarUrl={profile?.avatar_url}
-                        />
+        <SidebarProvider>
+            <UserDashboardSidebar 
+                userName={profile?.full_name || 'User'}
+                userEmail={user.email || ''}
+                avatarUrl={profile?.avatar_url}
+            />
+            <SidebarInset>
+                <header className="flex h-[57px] flex-shrink-0 items-center gap-4 border-b bg-background px-4 sm:px-6">
+                    <div className="md:hidden">
+                        <SidebarTrigger />
                     </div>
-                </aside>
-                <main className="flex-1 min-w-0">
-                    {children}
+                    <h1 className="flex-1 text-xl font-semibold">My Account</h1>
+                    <ThemeToggle />
+                </header>
+                <main className="flex-1 overflow-y-auto">
+                    <div className="flex flex-col gap-4 p-4 sm:px-6 sm:py-6 lg:gap-6">
+                        {children}
+                    </div>
                 </main>
-            </div>
-        </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
