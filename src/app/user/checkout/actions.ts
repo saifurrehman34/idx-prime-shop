@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 const CheckoutSchema = z.object({
   addressId: z.string().uuid('A shipping address is required.'),
+  paymentMethod: z.enum(['cod', 'card'], { required_error: 'A payment method is required.' }),
 });
 
 type FormState = {
@@ -39,17 +40,18 @@ export async function placeOrder(
 
   const validatedFields = CheckoutSchema.safeParse({
     addressId: formData.get('addressId'),
+    paymentMethod: formData.get('paymentMethod'),
   });
 
   if (!validatedFields.success) {
     return {
-      message: 'Please select a shipping address.',
+      message: 'Please complete all required fields.',
       success: false,
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
   
-  const { addressId } = validatedFields.data;
+  const { addressId, paymentMethod } = validatedFields.data;
   
   // Verify the address belongs to the user
   const { data: address, error: addressError } = await supabase
@@ -73,13 +75,14 @@ export async function placeOrder(
       total_amount: totalAmount,
       shipping_address_id: addressId,
       status: 'pending',
+      payment_method: paymentMethod,
     })
     .select()
     .single();
 
   if (orderError || !newOrder) {
     console.error('Error creating order:', orderError);
-    return { message: 'Could not create order. Please try again.', success: false };
+    return { message: `Could not create order. Please try again. DB Error: ${orderError?.message}`, success: false };
   }
 
   const orderItems = cartItems.map(item => ({

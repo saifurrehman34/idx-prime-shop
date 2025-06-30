@@ -274,6 +274,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          payment_method: string
           shipping_address_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
@@ -282,6 +283,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          payment_method: string
           shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount: number
@@ -290,6 +292,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          payment_method?: string
           shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
