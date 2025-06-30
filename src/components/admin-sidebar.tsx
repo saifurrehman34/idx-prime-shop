@@ -37,7 +37,7 @@ export function AdminSidebar({ userName, userEmail, avatarUrl }: AdminSidebarPro
     const pathname = usePathname();
 
     return (
-        <Sidebar collapsible="icon" variant="sidebar">
+        <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <Link href="/" className="flex items-center gap-2 font-bold text-lg">
                     <Package />
