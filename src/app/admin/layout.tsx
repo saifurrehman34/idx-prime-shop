@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
     const supabase = createClient();
@@ -19,17 +21,24 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     }
 
     return (
-        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <SidebarProvider>
             <AdminSidebar 
                 userName={profile.full_name || 'Admin'}
                 userEmail={user.email || ''}
                 avatarUrl={profile.avatar_url}
             />
-            <div className="flex flex-col">
+            <SidebarInset>
+                <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
+                    <div className="md:hidden">
+                        <SidebarTrigger />
+                    </div>
+                    <h1 className="flex-1 text-xl font-semibold">Dashboard</h1>
+                    <ThemeToggle />
+                </header>
                 <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                     {children}
                 </main>
-            </div>
-        </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
