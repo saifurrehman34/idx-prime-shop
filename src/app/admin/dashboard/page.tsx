@@ -1,3 +1,4 @@
+
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdminSqlForm } from '@/components/admin-sql-form';
