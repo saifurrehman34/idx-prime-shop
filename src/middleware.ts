@@ -22,7 +22,6 @@ export async function middleware(request: NextRequest) {
         return request.cookies.get(name)?.value
       },
       set(name: string, value: string, options: CookieOptions) {
-        // If the cookie is set, update it in the request and response
         request.cookies.set({
           name,
           value,
@@ -40,7 +39,6 @@ export async function middleware(request: NextRequest) {
         })
       },
       remove(name: string, options: CookieOptions) {
-        // If the cookie is removed, update it in the request and response
         request.cookies.set({
           name,
           value: '',
@@ -60,46 +58,8 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // This will refresh the session if expired
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const { pathname } = request.nextUrl
-
-  const isAdminRoute = pathname.startsWith('/admin')
-  const isUserDashboardRoute = pathname.startsWith('/user')
-  const isProtectedRoute = isAdminRoute || isUserDashboardRoute
-  const isAuthRoute = pathname === '/login' || pathname === '/signup'
-
-  if (!user && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  if (user) {
-    if (isAuthRoute) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (profile?.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-      }
-      return NextResponse.redirect(new URL('/user/home', request.url))
-    }
-
-    if (isAdminRoute) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (profile?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/user/home', request.url))
-      }
-    }
-  }
+  // refreshing the session will automatically handle periods of inactivity
+  await supabase.auth.getUser()
 
   return response
 }
@@ -111,7 +71,6 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
      */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
