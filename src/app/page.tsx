@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Eye, Heart, Star, Ship, Headset, ShieldCheck, Headphones, Apple } from 'lucide-react';
@@ -9,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { HomeHeroSection } from '@/components/home-hero-section';
+
+export const dynamic = 'force-dynamic';
 
 const parseImageUrl = (url: string | null): string => {
     if (!url) return 'https://placehold.co/600x400.png';
