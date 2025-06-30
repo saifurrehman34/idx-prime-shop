@@ -22,15 +22,17 @@ export default async function UserDashboardLayout({ children }: { children: Reac
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="md:col-span-1">
-                    <UserDashboardSidebar 
-                        userName={profile?.full_name || 'User'} 
-                        userEmail={user.email || ''} 
-                        avatarUrl={profile?.avatar_url}
-                    />
-                </div>
-                <main className="md:col-span-3">
+            <div className="flex flex-col md:flex-row md:gap-8">
+                <aside className="w-full md:w-64 lg:w-72 flex-shrink-0 mb-8 md:mb-0">
+                    <div className="md:sticky md:top-28">
+                        <UserDashboardSidebar 
+                            userName={profile?.full_name || 'User'} 
+                            userEmail={user.email || ''} 
+                            avatarUrl={profile?.avatar_url}
+                        />
+                    </div>
+                </aside>
+                <main className="flex-1 min-w-0">
                     {children}
                 </main>
             </div>

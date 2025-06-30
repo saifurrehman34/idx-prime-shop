@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { LayoutDashboard, ShoppingBag, Heart, Star, MapPin, Settings, LogOut } from "lucide-react";
 
 interface UserDashboardSidebarProps {
@@ -21,6 +21,9 @@ const navItems = [
     { href: "/user/wishlist", label: "My Wishlist", icon: Heart },
     { href: "/user/reviews", label: "My Reviews", icon: Star },
     { href: "/user/addresses", label: "Manage Addresses", icon: MapPin },
+];
+
+const settingsNavItems = [
     { href: "/user/settings", label: "Profile Settings", icon: Settings },
 ];
 
@@ -28,38 +31,55 @@ export function UserDashboardSidebar({ userName, userEmail, avatarUrl }: UserDas
     const pathname = usePathname();
 
     return (
-        <Card>
-            <CardContent className="p-4">
-                <div className="flex flex-col items-center text-center mb-6">
-                    <Avatar className="h-20 w-20 mb-2">
-                        <AvatarImage src={avatarUrl || ''} alt={userName} />
-                        <AvatarFallback>{userName.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <h2 className="text-lg font-semibold">{userName}</h2>
-                    <p className="text-sm text-muted-foreground">{userEmail}</p>
+        <div className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm">
+            <div className="flex items-center gap-4 mb-4">
+                <Avatar className="h-14 w-14">
+                    <AvatarImage src={avatarUrl || ''} alt={userName} />
+                    <AvatarFallback>{userName.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <h2 className="text-lg font-semibold truncate">{userName}</h2>
+                    <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
                 </div>
-                <nav className="flex flex-col gap-1">
-                    {navItems.map((item) => (
-                        <Button
-                            key={item.label}
-                            asChild
-                            variant={pathname === item.href ? "secondary" : "ghost"}
-                            className="justify-start"
-                        >
-                            <Link href={item.href}>
-                                <item.icon className="mr-2 h-4 w-4" />
-                                {item.label}
-                            </Link>
-                        </Button>
-                    ))}
-                     <form action={logout}>
-                        <Button variant="ghost" className="w-full justify-start mt-2">
-                           <LogOut className="mr-2 h-4 w-4" />
-                           Logout
-                        </Button>
-                    </form>
-                </nav>
-            </CardContent>
-        </Card>
+            </div>
+            <Separator />
+            <nav className="flex flex-col gap-1 py-4">
+                {navItems.map((item) => (
+                    <Link
+                        key={item.label}
+                        href={item.href}
+                        className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                            pathname === item.href && "bg-muted text-primary font-semibold"
+                        )}
+                    >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                    </Link>
+                ))}
+            </nav>
+            <Separator />
+             <nav className="flex flex-col gap-1 pt-4">
+                 {settingsNavItems.map((item) => (
+                    <Link
+                        key={item.label}
+                        href={item.href}
+                        className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                            pathname === item.href && "bg-muted text-primary font-semibold"
+                        )}
+                    >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                    </Link>
+                ))}
+                 <form action={logout}>
+                    <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                       <LogOut className="h-4 w-4" />
+                       Logout
+                    </button>
+                </form>
+            </nav>
+        </div>
     );
 }
