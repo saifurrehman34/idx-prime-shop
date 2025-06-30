@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { TopHeader } from "@/components/top-header";
 import { cn } from "@/lib/utils";
 import { createClient } from '@/lib/supabase/server';
 import type { Category } from '@/types';
 import type { User } from '@supabase/supabase-js';
 import { PT_Sans } from 'next/font/google';
+import { MainLayoutWrapper } from '@/components/main-layout-wrapper';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -35,7 +33,9 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", ptSans.variable)}>
         <Providers>
-            {children}
+            <MainLayoutWrapper categories={categories} user={user}>
+              {children}
+            </MainLayoutWrapper>
         </Providers>
       </body>
     </html>
