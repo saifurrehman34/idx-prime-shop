@@ -91,7 +91,7 @@ export function CheckoutForm({ initialAddresses }: { initialAddresses: Address[]
       <div>
         <Card>
           <CardHeader>
-            <CardTitle>Shipping &amp; Payment</CardTitle>
+            <CardTitle>Shipping & Payment</CardTitle>
             <CardDescription>Select your shipping address and payment method.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -111,8 +111,8 @@ export function CheckoutForm({ initialAddresses }: { initialAddresses: Address[]
                         <div className="text-sm">
                         <p className="font-semibold">{address.address_line_1}</p>
                         <address className="not-italic text-muted-foreground">
-                            {address.address_line_2 &amp;&amp; &lt;&gt;{address.address_line_2}&lt;br /&gt;&lt;&gt;}
-                            {address.city}, {address.state} {address.postal_code}&lt;br /&gt;
+                            {address.address_line_2 && <>{address.address_line_2}<br /></>}
+                            {address.city}, {address.state} {address.postal_code}<br />
                             {address.country}
                         </address>
                         </div>
