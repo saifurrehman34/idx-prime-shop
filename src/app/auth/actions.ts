@@ -11,68 +11,27 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string;
   const supabase = createClient();
 
-  // Step 1: Sign in
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  if (signInError) {
+  if (error) {
     let message = 'Could not authenticate user.';
-    if (signInError.message.includes('Invalid login credentials')) {
+    if (error.message.includes('Invalid login credentials')) {
         message = 'Invalid email or password. Please try again.';
-    } else if (signInError.message.includes('Email not confirmed')) {
+    } else if (error.message.includes('Email not confirmed')) {
         message = 'Please check your email to confirm your account before logging in.';
     }
+    console.error('Login Error:', error.message);
     return redirect(`/login?message=${encodeURIComponent(message)}`);
   }
   
-  const user = signInData.user;
-  if (!user) {
-    return redirect(`/login?message=${encodeURIComponent('Could not authenticate user. No user data found.')}`);
-  }
-
-  // Step 2: Get user profile, or create it if it's missing.
-  let { data: profile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError && profileError.code === 'PGRST116') {
-    // Profile doesn't exist, create it.
-    const { data: newProfile, error: insertError } = await supabase
-      .from('user_profiles')
-      .insert({ id: user.id, role: 'user' }) // Default role is 'user'
-      .select('role')
-      .single();
-    
-    if (insertError) {
-      // If profile creation fails, we can't proceed.
-      await supabase.auth.signOut();
-      return redirect(`/login?message=${encodeURIComponent(`A critical error occurred: Could not create user profile.`)}`);
-    }
-    profile = newProfile;
-  } else if (profileError) {
-    // Any other profile error is also critical.
-    await supabase.auth.signOut();
-    return redirect(`/login?message=${encodeURIComponent(`A critical error occurred: Could not retrieve user profile.`)}`);
-  }
-
-  if (!profile) {
-    // This should theoretically not be reached, but it's a good safeguard.
-    await supabase.auth.signOut();
-    return redirect(`/login?message=${encodeURIComponent('Could not retrieve or create user profile.')}`);
-  }
-
-  // Revalidate the root layout to ensure the cookie is read for the next navigation
+  // Revalidate the root path to ensure the new session cookie is read
   revalidatePath('/', 'layout');
 
-  // Step 3: Redirect based on role
-  if (profile.role === 'admin') {
-    return redirect('/admin/dashboard');
-  }
-
+  // Redirect to a generic authenticated route.
+  // The layout for this route will handle role-based redirection.
   return redirect('/user/home');
 }
 

@@ -18,16 +18,6 @@ export async function middleware(request: NextRequest) {
         },
         set(name: string, value: string, options: CookieOptions) {
           // If the cookie is set, update the request and response cookies
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
           response.cookies.set({
             name,
             value,
@@ -36,19 +26,8 @@ export async function middleware(request: NextRequest) {
         },
         remove(name: string, options: CookieOptions) {
           // If the cookie is removed, update the request and response cookies
-          request.cookies.set({
+          response.cookies.delete({
             name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
             ...options,
           })
         },

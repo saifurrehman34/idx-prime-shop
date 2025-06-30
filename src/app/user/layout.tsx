@@ -12,7 +12,13 @@ export default async function UserDashboardLayout({ children }: { children: Reac
         return redirect('/login');
     }
 
-    const { data: profile } = await supabase.from('user_profiles').select('full_name, avatar_url').eq('id', user.id).single();
+    const { data: profile } = await supabase.from('user_profiles').select('full_name, avatar_url, role').eq('id', user.id).single();
+
+    // If the user is an admin, redirect them to the admin dashboard.
+    // This handles the role-based redirect after login.
+    if (profile?.role === 'admin') {
+        return redirect('/admin/dashboard');
+    }
 
     return (
         <div className="container mx-auto px-4 py-8">
