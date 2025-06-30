@@ -41,7 +41,7 @@ export function AdminSidebar({ userName, userEmail, avatarUrl }: AdminSidebarPro
             <SidebarHeader>
                 <Link href="/" className="flex items-center gap-2 font-bold text-lg">
                     <Package />
-                    <span className="group-data-[collapsible=icon]:hidden">Prime Shop</span>
+                    <span className="group-data-[collapsible=icon]:hidden">Verdant Market</span>
                 </Link>
             </SidebarHeader>
             <SidebarContent>

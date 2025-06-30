@@ -17,7 +17,7 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Prime Shop',
+  title: 'Verdant Market',
   description: 'Fresh and organic products delivered to you.',
 };
 
@@ -32,15 +32,10 @@ export default async function RootLayout({
   const categories: Category[] = categoriesData || [];
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", ptSans.variable)}>
         <Providers>
-            <div className="relative flex min-h-screen flex-col">
-              <TopHeader />
-              <Header categories={categories} user={user} />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
+            {children}
         </Providers>
       </body>
     </html>
