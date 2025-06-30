@@ -27,16 +27,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 userEmail={user.email || ''}
                 avatarUrl={profile.avatar_url}
             />
-            <SidebarInset>
-                <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
+            <SidebarInset className="h-svh flex-col overflow-hidden">
+                <header className="flex h-[57px] flex-shrink-0 items-center gap-1 border-b bg-background px-4">
                     <div className="md:hidden">
                         <SidebarTrigger />
                     </div>
                     <h1 className="flex-1 text-xl font-semibold">Dashboard</h1>
                     <ThemeToggle />
                 </header>
-                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                    {children}
+                <main className="flex-1 overflow-y-auto">
+                    <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+                        {children}
+                    </div>
                 </main>
             </SidebarInset>
         </SidebarProvider>
