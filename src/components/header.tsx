@@ -36,6 +36,7 @@ import { logout } from '@/app/auth/actions';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Input } from './ui/input';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from './theme-toggle';
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -156,6 +157,8 @@ export function Header({ categories, user }: { categories: Category[]; user: Use
                 <Cart />
                 </SheetContent>
             </Sheet>
+
+            <ThemeToggle />
 
             {user ? (
               <DropdownMenu>
