@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/use-cart';
@@ -38,7 +38,13 @@ export function ProductCard({ product, isFavorited: initialIsFavorited }: Produc
     e.stopPropagation();
     addToCart(product);
     toast({
-      title: "Added to cart",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-5 w-5" />
+          <span>Added to cart</span>
+        </div>
+      ),
       description: `${product.name} has been added to your cart.`,
     });
   };

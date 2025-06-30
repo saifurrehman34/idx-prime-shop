@@ -1,5 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -13,52 +13,60 @@ export async function middleware(request: NextRequest) {
 
   if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase URL or Anon Key in middleware.')
-    return response;
+    return response
   }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseKey,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is updated, update the cookies for the request and response
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the cookies for the request and response
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value
       },
-    }
-  )
+      set(name: string, value: string, options: CookieOptions) {
+        // If the cookie is set, update it in the request and response
+        request.cookies.set({
+          name,
+          value,
+          ...options,
+        })
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        })
+        response.cookies.set({
+          name,
+          value,
+          ...options,
+        })
+      },
+      remove(name: string, options: CookieOptions) {
+        // If the cookie is removed, update it in the request and response
+        request.cookies.set({
+          name,
+          value: '',
+          ...options,
+        })
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        })
+        response.cookies.set({
+          name,
+          value: '',
+          ...options,
+        })
+      },
+    },
+  })
 
   // This will refresh the session if expired
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  
+
   const isAdminRoute = pathname.startsWith('/admin')
   const isUserDashboardRoute = pathname.startsWith('/user')
   const isProtectedRoute = isAdminRoute || isUserDashboardRoute
@@ -70,18 +78,26 @@ export async function middleware(request: NextRequest) {
 
   if (user) {
     if (isAuthRoute) {
-        const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
-        if (profile?.role === 'admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-        }
-        return NextResponse.redirect(new URL('/user/home', request.url))
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (profile?.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+      }
+      return NextResponse.redirect(new URL('/user/home', request.url))
     }
-    
+
     if (isAdminRoute) {
-        const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
-        if (profile?.role !== 'admin') {
-            return NextResponse.redirect(new URL('/user/home', request.url))
-        }
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (profile?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/user/home', request.url))
+      }
     }
   }
 
@@ -99,4 +115,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
-};
+}
