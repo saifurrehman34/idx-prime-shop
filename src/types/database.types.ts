@@ -512,7 +512,7 @@ export type Database = {
           total_products: number
           total_users: number
           total_subscribers: number
-        }[]
+        }
       }
       get_revenue_over_time: {
         Args: Record<PropertyKey, never>
@@ -529,7 +529,7 @@ export type Database = {
           total_spent: number
           total_orders: number
           pending_orders: number
-        }[]
+        }
       }
       user_has_purchased_product: {
         Args: {
