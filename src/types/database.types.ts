@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -505,9 +506,18 @@ export type Database = {
       get_admin_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
-          total_users: number
-          total_products: number
+          total_revenue: number
           total_orders: number
+          pending_orders: number
+          total_products: number
+          total_users: number
+          total_subscribers: number
+        }[]
+      }
+      get_revenue_over_time: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: string
           total_revenue: number
         }[]
       }
@@ -520,6 +530,13 @@ export type Database = {
           total_orders: number
           pending_orders: number
         }[]
+      }
+      user_has_purchased_product: {
+        Args: {
+          p_user_id: string
+          p_product_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
@@ -610,3 +627,5 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
   ? Database["public"]["Enums"][PublicEnumNameOrOptions]
   : never
+
+    
