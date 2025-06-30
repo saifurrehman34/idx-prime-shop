@@ -22,23 +22,42 @@ export async function login(formData: FormData) {
     return redirect(`/login?message=${encodeURIComponent(message)}`);
   }
   
-  if (!signInData.user) {
+  const user = signInData.user;
+  if (!user) {
     return redirect(`/login?message=${encodeURIComponent('Could not authenticate user. No user data found.')}`);
   }
 
   // After successful login, get user profile to determine role
-  const { data: profile, error: profileError } = await supabase
+  let { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('role')
-    .eq('id', signInData.user.id)
+    .eq('id', user.id)
     .single();
 
-  if (profileError || !profile) {
-    // Even if login is successful, if we can't get the profile, something is wrong.
-    // Log them out and send to login with an error message.
+  // If profile doesn't exist, create it. This handles users who signed up before profile creation was automated.
+  if (profileError && profileError.code === 'PGRST116') { // "PGRST116": "single() did not return a row"
+    const { data: newProfile, error: insertError } = await supabase
+      .from('user_profiles')
+      .insert({ id: user.id, role: 'user' })
+      .select('role')
+      .single();
+    
+    if (insertError) {
+      await supabase.auth.signOut();
+      return redirect(`/login?message=${encodeURIComponent(`Could not create user profile: ${insertError.message}`)}`);
+    }
+    profile = newProfile;
+  } else if (profileError) {
+    // For any other profile-related error, it's a problem.
     await supabase.auth.signOut();
-    return redirect(`/login?message=${encodeURIComponent('Could not retrieve user profile. Please try again.')}`);
+    return redirect(`/login?message=${encodeURIComponent(`Could not retrieve user profile: ${profileError.message}`)}`);
   }
+
+  if (!profile) {
+     await supabase.auth.signOut();
+     return redirect(`/login?message=${encodeURIComponent('Could not retrieve or create user profile.')}`);
+  }
+
 
   // Redirect based on role
   if (profile.role === 'admin') {
@@ -58,7 +77,7 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback?next=/user/home`,
     },
   });
 
