@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
@@ -64,6 +65,9 @@ export async function login(formData: FormData) {
     return redirect(`/login?message=${encodeURIComponent('Could not retrieve or create user profile.')}`);
   }
 
+  // Revalidate the root layout to ensure the cookie is read for the next navigation
+  revalidatePath('/', 'layout');
+
   // Step 3: Redirect based on role
   if (profile.role === 'admin') {
     return redirect('/admin/dashboard');
@@ -98,5 +102,6 @@ export async function signup(formData: FormData) {
 export async function logout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    revalidatePath('/', 'layout');
     return redirect('/login');
 }
