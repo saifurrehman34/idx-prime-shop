@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -6,8 +7,7 @@ import { logout } from "@/app/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { LayoutDashboard, ShoppingBag, Heart, Star, MapPin, User, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Heart, Star, MapPin, Settings, LogOut } from "lucide-react";
 
 interface UserDashboardSidebarProps {
     userName: string;
