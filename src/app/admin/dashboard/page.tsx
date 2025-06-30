@@ -19,7 +19,6 @@ export default async function AdminDashboardPage() {
     console.error("Error fetching revenue data:", revenueError);
   }
 
-  // @ts-ignore
   const chartData = (revenueData || []).map(d => ({...d, total_revenue: Number(d.total_revenue)}));
 
   return (
